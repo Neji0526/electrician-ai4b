@@ -118,9 +118,9 @@ export function MobileNav({ open, onClose }: { open: boolean; onClose: () => voi
             trackEstimate('mobile_nav')
             onClose()
           }}
-          className={btn('primary', 'lg')}
+          className={btn('cta', 'lg')}
         >
-          Free Estimate
+          Get a Free Quote
         </Link>
       </div>
     </div>

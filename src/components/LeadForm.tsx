@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState, type ReactNode } from 'react'
 import { Icon } from './Icon'
 import { Button, btn } from './ui'
 import { ErrorSummary, SelectField, TextAreaField, TextField, ToggleField } from './fields'
@@ -29,6 +29,12 @@ export function LeadForm({
   defaultServiceSlug,
   compact = false,
   className,
+  submitLabel = 'Request my free estimate',
+  showEmergencyToggle = true,
+  showMessage,
+  serviceLabel = 'What do you need?',
+  messageLabel = 'Anything we should know?',
+  footerNote,
 }: {
   services: ServiceOption[]
   source?: LeadSource
@@ -37,6 +43,13 @@ export function LeadForm({
   defaultServiceSlug?: string
   compact?: boolean
   className?: string
+  submitLabel?: string
+  /** The homepage hero card omits it — the emergency band right below covers that case. */
+  showEmergencyToggle?: boolean
+  showMessage?: boolean
+  serviceLabel?: string
+  messageLabel?: string
+  footerNote?: ReactNode
 }) {
   const [name, setName] = useState('')
   const [phone, setPhone] = useState('')
@@ -176,7 +189,7 @@ export function LeadForm({
         />
 
         <SelectField
-          label="What do you need?"
+          label={serviceLabel}
           name="serviceSlug"
           optional
           value={serviceSlug}
@@ -190,9 +203,9 @@ export function LeadForm({
           ))}
         </SelectField>
 
-        {!compact ? (
+        {showMessage ?? !compact ? (
           <TextAreaField
-            label="Anything we should know?"
+            label={messageLabel}
             name="message"
             optional
             value={message}
@@ -201,14 +214,16 @@ export function LeadForm({
           />
         ) : null}
 
-        <ToggleField
-          tone="accent"
-          label="This is an emergency"
-          checked={isEmergency}
-          onChange={setIsEmergency}
-        />
+        {showEmergencyToggle ? (
+          <ToggleField
+            tone="accent"
+            label="This is an emergency"
+            checked={isEmergency}
+            onChange={setIsEmergency}
+          />
+        ) : null}
 
-        {isEmergency ? (
+        {showEmergencyToggle && isEmergency ? (
           <a
             href={business.emergencyPhoneHref}
             onClick={() => track('emergency_call_click', { location: `lead_form_${source}` })}
@@ -225,14 +240,23 @@ export function LeadForm({
           </p>
         ) : null}
 
-        <Button type="submit" size="lg" className="w-full" disabled={status === 'submitting'}>
-          {status === 'submitting' ? 'Sending…' : 'Request my free estimate'}
+        <Button
+          type="submit"
+          size="lg"
+          variant="cta"
+          className="w-full"
+          disabled={status === 'submitting'}
+        >
+          {status === 'submitting' ? 'Sending…' : submitLabel}
+          {status === 'submitting' ? null : <Icon name="arrow-right" size={18} />}
         </Button>
 
-        <p className="flex items-center justify-center gap-1.5 text-center text-sm text-muted">
-          <Icon name="shield" size={15} className="text-brand-600" />
-          No obligation · We never sell your details
-        </p>
+        {footerNote ?? (
+          <p className="flex items-center justify-center gap-1.5 text-center text-sm text-muted">
+            <Icon name="shield" size={15} className="text-brand-600" />
+            No obligation · We never sell your details
+          </p>
+        )}
       </div>
     </form>
   )

@@ -97,20 +97,18 @@ function SitemapPage() {
           </Group>
 
           <Group title="Company">
-            {footerNav.company.map((item) => (
+            {[...footerNav.quickLinks, ...footerNav.legal].map((item) => (
               <li key={item.href}>
                 <AppLink to={item.href} className={linkClass}>
                   {item.label}
                 </AppLink>
               </li>
             ))}
-            {footerNav.support.map((item) => (
-              <li key={item.href}>
-                <AppLink to={item.href} className={linkClass}>
-                  {item.label}
-                </AppLink>
-              </li>
-            ))}
+            <li>
+              <AppLink to="/request-estimate" className={linkClass}>
+                Request an estimate
+              </AppLink>
+            </li>
           </Group>
 
           <Group title={`Services (${services.length})`}>

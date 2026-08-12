@@ -77,6 +77,8 @@ export interface Business {
   reviewCount: number
   serviceAreaSummary: string
   warranty: string
+  /** Labor warranty length, shown in the homepage stats block. */
+  warrantyYears: number
   financing: {
     enabled: boolean
     headline: string

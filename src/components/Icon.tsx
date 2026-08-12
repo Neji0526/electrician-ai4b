@@ -252,6 +252,46 @@ const paths: Record<string, React.ReactNode> = {
   ),
   filter: <path d="M3 5h18l-7 8v6l-4 2v-8Z" />,
   bolt: <path d="M13 2 4.5 13.4a.5.5 0 0 0 .4.8h5.3l-1.2 7.8 8.5-11.4a.5.5 0 0 0-.4-.8h-5.3Z" />,
+  dollar: (
+    <>
+      <circle cx="12" cy="12" r="9" />
+      <path d="M12 6.5v11" />
+      <path d="M14.7 9.4a2.6 2.6 0 0 0-2.4-1.3h-.6a2.2 2.2 0 0 0-.4 4.4h1.4a2.2 2.2 0 0 1-.4 4.4h-.6a2.6 2.6 0 0 1-2.4-1.3" />
+    </>
+  ),
+  'hand-heart': (
+    <>
+      <path d="M12 8.2 11.2 7.4a2 2 0 0 0-2.9 2.8L12 14l3.7-3.8a2 2 0 0 0-2.9-2.8Z" />
+      <path d="M3 15.5 6 15l4.4 1.6a2 2 0 0 0 1.4 0l4.6-1.7a1.6 1.6 0 0 1 1.6 2.7L14 21H7l-4-1.5Z" />
+    </>
+  ),
+  package: (
+    <>
+      <path d="M20.5 7.7 12 3 3.5 7.7v8.6L12 21l8.5-4.7Z" />
+      <path d="m3.7 7.8 8.3 4.5 8.3-4.5" />
+      <path d="M12 12.3V21" />
+    </>
+  ),
+  wallet: (
+    <>
+      <path d="M3.5 8.5A2.5 2.5 0 0 1 6 6h11.5a2 2 0 0 1 2 2v.5" />
+      <rect x="3.5" y="8.5" width="17" height="11" rx="2" />
+      <path d="M20.5 12.5H16a1.75 1.75 0 0 0 0 3.5h4.5" />
+    </>
+  ),
+  facebook: (
+    <path d="M22 12a10 10 0 1 0-11.6 9.9v-7h-2.5V12h2.5V9.8c0-2.5 1.5-3.9 3.8-3.9 1.1 0 2.2.2 2.2.2v2.4h-1.2c-1.2 0-1.6.8-1.6 1.6V12h2.7l-.4 2.9h-2.3v7A10 10 0 0 0 22 12Z" />
+  ),
+  instagram: (
+    <>
+      <rect x="3" y="3" width="18" height="18" rx="5" />
+      <circle cx="12" cy="12" r="4" />
+      <circle cx="17.2" cy="6.8" r="1.1" fill="currentColor" stroke="none" />
+    </>
+  ),
+  google: (
+    <path d="M21.6 12.2c0-.7-.1-1.4-.2-2H12v3.9h5.4a4.6 4.6 0 0 1-2 3v2.5h3.2c1.9-1.7 3-4.3 3-7.4ZM12 22c2.7 0 5-.9 6.6-2.4l-3.2-2.5c-.9.6-2 1-3.4 1-2.6 0-4.8-1.7-5.6-4.1H3.1v2.6A10 10 0 0 0 12 22ZM6.4 14a6 6 0 0 1 0-3.8V7.6H3.1a10 10 0 0 0 0 8.8ZM12 5.9c1.5 0 2.8.5 3.8 1.5l2.8-2.8A10 10 0 0 0 3.1 7.6l3.3 2.6C7.2 7.7 9.4 5.9 12 5.9Z" />
+  ),
 }
 
 export type IconName = keyof typeof paths
@@ -263,7 +303,7 @@ export interface IconProps extends Omit<SVGProps<SVGSVGElement>, 'name'> {
   filled?: boolean
 }
 
-const FILLED = new Set(['star', 'quote', 'bolt', 'filter'])
+const FILLED = new Set(['star', 'quote', 'bolt', 'filter', 'facebook', 'google'])
 
 export function Icon({ name, size = 20, filled, className, ...rest }: IconProps) {
   const d = paths[name] ?? paths.bolt

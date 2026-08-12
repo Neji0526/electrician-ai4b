@@ -71,8 +71,8 @@ function ServicesPage() {
         intro={
           <>
             Every job starts with a diagnosis and a written price. We pull the permits the city
-            requires, meet the inspector, and back the workmanship for two to five years depending on
-            the job.
+            requires, meet the inspector, and back the workmanship
+            for eight years.
           </>
         }
         showRating

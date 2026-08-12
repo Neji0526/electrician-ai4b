@@ -14,7 +14,14 @@ import { fileURLToPath, pathToFileURL } from 'node:url'
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..')
 const ORIGIN = 'https://www.hillcountryelectric.com'
-const PHONE = '(512) 555-0142'
+
+// Derived from the content rather than hardcoded, so changing the business
+// settings can never silently invalidate the assertions below.
+const businessSource = readFileSync(join(root, 'src/content/business.ts'), 'utf8')
+const PHONE = /^\s{2}phone: '([^']+)',$/m.exec(businessSource)?.[1]
+if (!PHONE) throw new Error('Could not read the business phone number from business.ts')
+
+const CTA = /Request your free estimate|Free Estimate|Free Quote|Get a Free Quote|Get a Free Estimate|Request my free estimate|Send My Request/i
 
 // Windows absolute paths must be file:// URLs for the ESM loader.
 const server = await import(pathToFileURL(join(root, 'dist/server/server.js')).href)
@@ -34,6 +41,7 @@ const routes = [
   '/contact',
   '/request-estimate',
   '/sitemap',
+  '/credits',
   '/privacy',
   '/terms',
 ]
@@ -106,8 +114,7 @@ for (const path of routes) {
       if (!canonical) problems.push('no canonical')
       if (ld === 0) problems.push('no structured data')
       if (!html.includes(PHONE)) problems.push('phone number missing from SSR html')
-      if (!/Request your free estimate|Free Estimate|Get a Free Estimate|Request my free estimate/i.test(html))
-        problems.push('no estimate CTA')
+      if (!CTA.test(html)) problems.push('no estimate CTA')
     }
     if (expectNotFound && !/could not find that page/i.test(html)) {
       problems.push('404 page did not render')
