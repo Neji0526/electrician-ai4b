@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 64" width="320" height="64" role="img" aria-label="Hill Country Electric">
+  <rect x="0" y="12" width="40" height="40" rx="10" fill="#175bb4"/>
+  <g transform="translate(8, 20) scale(1)"><path d="M13.4 2 5.2 13.1a.55.55 0 0 0 .44.88h4.7l-1.2 8L18.8 10.6a.55.55 0 0 0-.44-.88h-4.7l1.2-7.72Z" fill="#ffffff"/></g>
+  <text x="54" y="34" font-family="system-ui, -apple-system, 'Segoe UI', sans-serif" font-size="21" font-weight="800" fill="#0f1e33">Hill Country <tspan fill="#175bb4">Electric</tspan></text>
+  <text x="54" y="50" font-family="system-ui, -apple-system, 'Segoe UI', sans-serif" font-size="10" font-weight="600" letter-spacing="0.08em" fill="#5b7089">TECL 34291 · AUSTIN, TX</text>
+</svg>

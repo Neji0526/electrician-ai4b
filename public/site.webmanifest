@@ -1,0 +1,17 @@
+{
+  "name": "Hill Country Electric",
+  "short_name": "HC Electric",
+  "description": "Licensed electricians in Austin, TX. Panel upgrades, EV chargers, rewiring, lighting and 24/7 emergency repair.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#175bb4",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
+}

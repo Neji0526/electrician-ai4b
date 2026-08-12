@@ -1,0 +1,10 @@
+# Hill Country Electric — https://www.hillcountryelectric.com
+
+User-agent: *
+Allow: /
+
+# Nothing here is private, but there is no value in indexing asset chunks.
+Disallow: /assets/
+Disallow: /_build/
+
+Sitemap: https://www.hillcountryelectric.com/sitemap.xml
