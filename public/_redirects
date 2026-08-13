@@ -1,0 +1,9 @@
+# SPA fallback. Read by Netlify and Cloudflare Pages; ignored elsewhere.
+#
+# Routes like /services/ev-charger-installation are not files on disk — the
+# router resolves them in the browser. Without this rule the host looks for a
+# matching file, finds none, and returns 404 for every URL except the homepage.
+#
+# Other hosts need the equivalent configured on their side; see the Deployment
+# section of README.md.
+/*  /index.html  200
