@@ -1,5 +1,6 @@
-import { Link } from '@tanstack/react-router'
+import { Link } from 'react-router'
 import { Icon } from './Icon'
+import { Seo } from './Seo'
 import { btn } from './ui'
 import { business } from '~/content/business'
 import { trackPhone } from '~/lib/analytics'
@@ -11,6 +12,12 @@ import { trackPhone } from '~/lib/analytics'
 export function ErrorPage({ error }: { error: Error }) {
   return (
     <div className="container-page py-20 md:py-28">
+      <Seo
+        title="Something went wrong"
+        description={`We hit an error loading this page. Call ${business.phone} and we will help.`}
+        path="/error"
+        noindex
+      />
       <div className="mx-auto max-w-2xl text-center">
         <span className="mx-auto grid h-14 w-14 place-items-center rounded-full bg-accent-50 text-accent-700">
           <Icon name="warning" size={28} />

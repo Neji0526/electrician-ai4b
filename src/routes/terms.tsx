@@ -1,4 +1,4 @@
-import { createFileRoute } from '@tanstack/react-router'
+import { Seo } from '~/components/Seo'
 
 import { PageHero } from '~/components/PageHero'
 import { Section } from '~/components/ui'
@@ -13,20 +13,19 @@ const TRAIL = [
 
 const UPDATED = 'January 15, 2026'
 
-export const Route = createFileRoute('/terms')({
-  head: () =>
-    seo({
-      title: 'Terms of Service',
-      description: `Terms covering estimates, pricing, scheduling, permits, payment and the workmanship warranty offered by ${business.legalName}.`,
-      path: '/terms',
-      schema: breadcrumbSchema(TRAIL),
-    }),
-  component: TermsPage,
-})
+const pageSeo = () =>
+  seo({
+    title: 'Terms of Service',
+    description: `Terms covering estimates, pricing, scheduling, permits, payment and the workmanship warranty offered by ${business.legalName}.`,
+    path: '/terms',
+    schema: breadcrumbSchema(TRAIL),
+  })
 
 function TermsPage() {
   return (
     <>
+      <Seo {...pageSeo()} />
+
       <PageHero
         trail={TRAIL}
         title="Terms of service"
@@ -161,3 +160,5 @@ function TermsPage() {
     </>
   )
 }
+
+export { TermsPage as Component }

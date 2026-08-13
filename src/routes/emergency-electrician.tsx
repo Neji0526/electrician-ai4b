@@ -1,4 +1,6 @@
-import { Link, createFileRoute } from '@tanstack/react-router'
+import { Link } from 'react-router'
+import { useRouteData } from '~/lib/router'
+import { Seo } from '~/components/Seo'
 
 import { Icon } from '~/components/Icon'
 import { Breadcrumbs } from '~/components/Breadcrumbs'
@@ -70,34 +72,37 @@ const SCENARIOS = [
   },
 ] as const
 
-export const Route = createFileRoute('/emergency-electrician')({
-  loader: async () => {
-    const [service, faqs, reviews] = await Promise.all([
-      getService('emergency-electrical-repair'),
-      getFaqs({ category: 'Emergency Service' }),
-      getReviewsForService('emergency-electrical-repair', 3),
-    ])
-    return { service, faqs, reviews }
-  },
-  head: ({ loaderData }) =>
-    seo({
-      title: `24/7 Emergency Electrician in ${business.address.city}, ${business.address.state}`,
-      description: `Sparking outlet, burning smell, hot panel or sudden power loss in ${business.address.city}? Licensed emergency electricians answer 24/7 with 60–90 minute typical on-site response.`,
-      path: '/emergency-electrician',
-      schema: [
-        breadcrumbSchema(TRAIL),
-        ...(loaderData?.service ? [serviceSchema(loaderData.service)] : []),
-        ...(loaderData?.faqs ? [faqSchema(loaderData.faqs)] : []),
-      ],
-    }),
-  component: EmergencyPage,
-})
+export const loader = async () => {
+  const [service, faqs, reviews] = await Promise.all([
+    getService('emergency-electrical-repair'),
+    getFaqs({ category: 'Emergency Service' }),
+    getReviewsForService('emergency-electrical-repair', 3),
+  ])
+  return { service, faqs, reviews }
+}
+
+type RouteData = Awaited<ReturnType<typeof loader>>
+
+const pageSeo = ({ loaderData }: { loaderData: RouteData }) =>
+  seo({
+    title: `24/7 Emergency Electrician in ${business.address.city}, ${business.address.state}`,
+    description: `Sparking outlet, burning smell, hot panel or sudden power loss in ${business.address.city}? Licensed emergency electricians answer 24/7 with 60–90 minute typical on-site response.`,
+    path: '/emergency-electrician',
+    schema: [
+      breadcrumbSchema(TRAIL),
+      ...(loaderData?.service ? [serviceSchema(loaderData.service)] : []),
+      ...(loaderData?.faqs ? [faqSchema(loaderData.faqs)] : []),
+    ],
+  })
 
 function EmergencyPage() {
-  const { faqs, reviews } = Route.useLoaderData()
+  const data = useRouteData<typeof loader>()
+  const { faqs, reviews } = data
 
   return (
     <>
+      <Seo {...pageSeo({ loaderData: data })} />
+
       {/* ------------------------------------------------------- hero (dark) */}
       <section className="bg-ink text-white">
         <div className="container-page py-8 md:py-12">
@@ -302,8 +307,7 @@ function EmergencyPage() {
                 {areaDirectory.map((area) => (
                   <li key={area.slug}>
                     <Link
-                      to="/service-areas/$locationSlug"
-                      params={{ locationSlug: area.slug }}
+                      to={`/service-areas/${area.slug}`}
                       className="flex items-center justify-between gap-2 rounded-lg border border-line px-3 py-2 text-[0.9375rem] transition-colors hover:border-brand-200 hover:bg-brand-50/50"
                     >
                       <span className="font-semibold text-ink">{area.label}</span>
@@ -398,3 +402,5 @@ function EmergencyPage() {
     </>
   )
 }
+
+export { EmergencyPage as Component }

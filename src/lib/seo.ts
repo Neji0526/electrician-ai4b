@@ -8,14 +8,36 @@ export interface SeoInput {
   image?: string
   type?: 'website' | 'article'
   noindex?: boolean
-  /** Emitted verbatim as an ld+json script. */
+  /** Emitted verbatim as one or more ld+json scripts. */
   schema?: unknown | unknown[]
   publishedTime?: string
   modifiedTime?: string
   author?: string
 }
 
+export interface MetaTag {
+  name?: string
+  property?: string
+  content: string
+}
+
+export interface SeoDescriptor {
+  title: string
+  meta: MetaTag[]
+  canonical: string
+  schema: unknown[]
+}
+
 const site = business.seo.siteUrl
+
+/**
+ * Identity helper. It exists so a page can write its SEO block as a bare object
+ * literal and still have it checked against `SeoInput` — excess or misspelled
+ * keys fail at the definition rather than silently doing nothing.
+ */
+export function seo(input: SeoInput): SeoInput {
+  return input
+}
 
 export function absoluteUrl(path: string) {
   if (path.startsWith('http')) return path
@@ -23,18 +45,18 @@ export function absoluteUrl(path: string) {
 }
 
 /**
- * Builds the object TanStack Router's `head()` expects. Every public route
- * uses this so canonical, Open Graph and Twitter tags can never drift apart.
+ * Resolves a page's SEO input into the exact tags to render. Every public route
+ * goes through this so canonical, Open Graph and Twitter tags can never drift
+ * apart. The `<Seo>` component renders the result; nothing else should.
  */
-export function seo(input: SeoInput) {
+export function buildSeo(input: SeoInput): SeoDescriptor {
   const title = input.title.includes(business.name)
     ? input.title
     : `${input.title} | ${business.name}`
   const url = absoluteUrl(input.path)
   const image = absoluteUrl(input.image ?? business.seo.ogImage)
 
-  const meta: Array<Record<string, string>> = [
-    { title },
+  const meta: MetaTag[] = [
     { name: 'description', content: input.description },
 
     { property: 'og:type', content: input.type ?? 'website' },
@@ -54,13 +76,12 @@ export function seo(input: SeoInput) {
     { name: 'geo.region', content: 'US-TX' },
     { name: 'geo.placename', content: business.address.city },
     { name: 'geo.position', content: `${business.geo.lat};${business.geo.lng}` },
-  ]
 
-  if (input.noindex) {
-    meta.push({ name: 'robots', content: 'noindex, nofollow' })
-  } else {
-    meta.push({ name: 'robots', content: 'index, follow, max-image-preview:large' })
-  }
+    {
+      name: 'robots',
+      content: input.noindex ? 'noindex, nofollow' : 'index, follow, max-image-preview:large',
+    },
+  ]
 
   if (input.type === 'article') {
     if (input.publishedTime)
@@ -70,16 +91,11 @@ export function seo(input: SeoInput) {
     if (input.author) meta.push({ property: 'article:author', content: input.author })
   }
 
-  const scripts = input.schema
-    ? (Array.isArray(input.schema) ? input.schema : [input.schema]).map((s) => ({
-        type: 'application/ld+json',
-        children: JSON.stringify(s),
-      }))
-    : undefined
+  const schema = input.schema
+    ? Array.isArray(input.schema)
+      ? input.schema
+      : [input.schema]
+    : []
 
-  return {
-    meta,
-    links: [{ rel: 'canonical', href: url }],
-    ...(scripts ? { scripts } : {}),
-  }
+  return { title, meta, canonical: url, schema }
 }

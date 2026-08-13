@@ -1,4 +1,7 @@
-import { Link, createFileRoute, notFound } from '@tanstack/react-router'
+import { Link } from 'react-router'
+import type { LoaderFunctionArgs } from 'react-router'
+import { useRouteData, notFound, requireParam } from '~/lib/router'
+import { Seo } from '~/components/Seo'
 
 import { Icon } from '~/components/Icon'
 import { Breadcrumbs } from '~/components/Breadcrumbs'
@@ -14,43 +17,43 @@ import { articleSchema, breadcrumbSchema } from '~/lib/schema'
 import { formatDate, priceLabel } from '~/lib/format'
 import { trackPhone } from '~/lib/analytics'
 
-export const Route = createFileRoute('/blog/$articleSlug')({
-  loader: async ({ params }) => {
-    const post = await getPost(params.articleSlug)
-    if (!post) throw notFound()
+export const loader = async ({ params }: LoaderFunctionArgs) => {
+  const post = await getPost(requireParam(params, 'articleSlug'))
+  if (!post) throw notFound()
 
-    const [related, service] = await Promise.all([
-      getRelatedPostCards(post.slug, 3),
-      post.relatedService ? getService(post.relatedService) : Promise.resolve(undefined),
-    ])
+  const [related, service] = await Promise.all([
+    getRelatedPostCards(post.slug, 3),
+    post.relatedService ? getService(post.relatedService) : Promise.resolve(undefined),
+  ])
 
-    return { post, related, service }
-  },
-  head: ({ loaderData }) => {
-    if (!loaderData) return {}
-    const { post } = loaderData
-    const trail = [
-      { label: 'Home', href: '/' },
-      { label: 'Resource Center', href: '/blog' },
-      { label: post.title, href: `/blog/${post.slug}` },
-    ]
-    return seo({
-      title: post.seo.title,
-      description: post.seo.description,
-      path: `/blog/${post.slug}`,
-      image: post.image.src,
-      type: 'article',
-      publishedTime: post.publishedOn,
-      modifiedTime: post.updatedOn ?? post.publishedOn,
-      author: post.author,
-      schema: [articleSchema(post), breadcrumbSchema(trail)],
-    })
-  },
-  component: ArticlePage,
-})
+  return { post, related, service }
+}
+
+type RouteData = Awaited<ReturnType<typeof loader>>
+
+const pageSeo = ({ loaderData }: { loaderData: RouteData }) => {
+  const { post } = loaderData
+  const trail = [
+    { label: 'Home', href: '/' },
+    { label: 'Resource Center', href: '/blog' },
+    { label: post.title, href: `/blog/${post.slug}` },
+  ]
+  return seo({
+    title: post.seo.title,
+    description: post.seo.description,
+    path: `/blog/${post.slug}`,
+    image: post.image.src,
+    type: 'article',
+    publishedTime: post.publishedOn,
+    modifiedTime: post.updatedOn ?? post.publishedOn,
+    author: post.author,
+    schema: [articleSchema(post), breadcrumbSchema(trail)],
+  })
+}
 
 function ArticlePage() {
-  const { post, related, service } = Route.useLoaderData()
+  const data = useRouteData<typeof loader>()
+  const { post, related, service } = data
 
   const trail = [
     { label: 'Home', href: '/' },
@@ -60,6 +63,8 @@ function ArticlePage() {
 
   return (
     <>
+      <Seo {...pageSeo({ loaderData: data })} />
+
       <article>
         {/* --------------------------------------------------------- header */}
         <header className="border-b border-line bg-surface">
@@ -145,8 +150,7 @@ function ArticlePage() {
                     {priceLabel(service.startingPrice)}
                   </p>
                   <Link
-                    to="/services/$serviceSlug"
-                    params={{ serviceSlug: service.slug }}
+                    to={`/services/${service.slug}`}
                     className={btn('secondary', 'md', 'mt-4 w-full')}
                   >
                     See the service page
@@ -191,8 +195,7 @@ function ArticlePage() {
             {related.map((item) => (
               <li key={item.slug} className="h-full">
                 <Link
-                  to="/blog/$articleSlug"
-                  params={{ articleSlug: item.slug }}
+                  to={`/blog/${item.slug}`}
                   className="group flex h-full flex-col rounded-card border border-line bg-white p-5 shadow-card transition-all hover:-translate-y-0.5 hover:border-brand-200 hover:shadow-lift"
                 >
                   <span className="text-sm font-semibold text-brand-700">{item.category}</span>
@@ -218,3 +221,5 @@ function ArticlePage() {
     </>
   )
 }
+
+export { ArticlePage as Component }

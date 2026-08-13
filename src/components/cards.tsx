@@ -1,4 +1,4 @@
-import { Link } from '@tanstack/react-router'
+import { Link } from 'react-router'
 import { Icon } from './Icon'
 import { Badge } from './ui'
 import { Photo, BeforeAfter } from './Photo'
@@ -52,8 +52,7 @@ export function ProjectCard({ project }: { project: ProjectCardData }) {
   return (
     <li className="h-full">
       <Link
-        to="/projects/$projectSlug"
-        params={{ projectSlug: project.slug }}
+        to={`/projects/${project.slug}`}
         className="group flex h-full flex-col overflow-hidden rounded-card border border-line bg-white shadow-card transition-all duration-200 hover:-translate-y-0.5 hover:border-brand-200 hover:shadow-lift"
       >
         <BeforeAfter before={project.before} after={project.after} />
@@ -149,8 +148,7 @@ export function AreaCard({ area }: { area: AreaCardData }) {
   return (
     <li className="h-full">
       <Link
-        to="/service-areas/$locationSlug"
-        params={{ locationSlug: area.slug }}
+        to={`/service-areas/${area.slug}`}
         className="group flex h-full flex-col rounded-card border border-line bg-white p-5 shadow-card transition-all duration-200 hover:-translate-y-0.5 hover:border-brand-200 hover:shadow-lift"
       >
         <div className="flex items-start justify-between gap-3">

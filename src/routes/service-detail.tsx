@@ -1,5 +1,8 @@
 import { useEffect } from 'react'
-import { Link, createFileRoute, notFound } from '@tanstack/react-router'
+import { Link } from 'react-router'
+import type { LoaderFunctionArgs } from 'react-router'
+import { useRouteData, notFound, requireParam } from '~/lib/router'
+import { Seo } from '~/components/Seo'
 
 import { Icon } from '~/components/Icon'
 import { PageHero } from '~/components/PageHero'
@@ -28,42 +31,42 @@ import { breadcrumbSchema, faqSchema, serviceSchema } from '~/lib/schema'
 import { track, trackPhone } from '~/lib/analytics'
 import { audienceLabel, priceLabel } from '~/lib/format'
 
-export const Route = createFileRoute('/services/$serviceSlug')({
-  loader: async ({ params }) => {
-    const service = await getService(params.serviceSlug)
-    if (!service) throw notFound()
+export const loader = async ({ params }: LoaderFunctionArgs) => {
+  const service = await getService(requireParam(params, 'serviceSlug'))
+  if (!service) throw notFound()
 
-    const [related, projects, reviews, faqs, allServices] = await Promise.all([
-      getRelatedServices(service.slug),
-      getProjectCards({ serviceSlug: service.slug, limit: 3 }),
-      getReviewsForService(service.slug, 3),
-      getFaqsForService(service.slug, 6),
-      getServiceOptions(),
-    ])
+  const [related, projects, reviews, faqs, allServices] = await Promise.all([
+    getRelatedServices(service.slug),
+    getProjectCards({ serviceSlug: service.slug, limit: 3 }),
+    getReviewsForService(service.slug, 3),
+    getFaqsForService(service.slug, 6),
+    getServiceOptions(),
+  ])
 
-    return { service, related, projects, reviews, faqs, allServices }
-  },
-  head: ({ loaderData }) => {
-    if (!loaderData) return {}
-    const { service, faqs } = loaderData
-    const trail = [
-      { label: 'Home', href: '/' },
-      { label: 'Services', href: '/services' },
-      { label: service.shortName, href: `/services/${service.slug}` },
-    ]
-    return seo({
-      title: service.seo.title,
-      description: service.seo.description,
-      path: `/services/${service.slug}`,
-      image: service.heroImage.src,
-      schema: [serviceSchema(service), breadcrumbSchema(trail), faqSchema(faqs)],
-    })
-  },
-  component: ServiceDetailPage,
-})
+  return { service, related, projects, reviews, faqs, allServices }
+}
+
+type RouteData = Awaited<ReturnType<typeof loader>>
+
+const pageSeo = ({ loaderData }: { loaderData: RouteData }) => {
+  const { service, faqs } = loaderData
+  const trail = [
+    { label: 'Home', href: '/' },
+    { label: 'Services', href: '/services' },
+    { label: service.shortName, href: `/services/${service.slug}` },
+  ]
+  return seo({
+    title: service.seo.title,
+    description: service.seo.description,
+    path: `/services/${service.slug}`,
+    image: service.heroImage.src,
+    schema: [serviceSchema(service), breadcrumbSchema(trail), faqSchema(faqs)],
+  })
+}
 
 function ServiceDetailPage() {
-  const { service, related, projects, reviews, faqs, allServices } = Route.useLoaderData()
+  const data = useRouteData<typeof loader>()
+  const { service, related, projects, reviews, faqs, allServices } = data
 
   useEffect(() => {
     track('service_view', { service: service.slug, category: service.category })
@@ -77,6 +80,8 @@ function ServiceDetailPage() {
 
   return (
     <>
+      <Seo {...pageSeo({ loaderData: data })} />
+
       <PageHero
         trail={trail}
         eyebrow={service.category}
@@ -260,8 +265,7 @@ function ServiceDetailPage() {
                 {areaDirectory.map((area, i) => (
                   <li key={area.slug} className="flex items-center gap-2">
                     <Link
-                      to="/service-areas/$locationSlug"
-                      params={{ locationSlug: area.slug }}
+                      to={`/service-areas/${area.slug}`}
                       className="text-brand-700 underline-offset-2 hover:underline"
                     >
                       {area.label}
@@ -357,3 +361,5 @@ function ServiceDetailPage() {
     </>
   )
 }
+
+export { ServiceDetailPage as Component }

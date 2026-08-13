@@ -7,18 +7,16 @@
   "scripts": {
     "dev": "vite dev --port 3000",
     "build": "vite build",
-    "start": "node .output/server/index.mjs",
-    "serve": "vite preview",
+    "preview": "vite preview --port 3000",
     "typecheck": "tsc --noEmit",
-    "smoke": "node scripts/smoke.mjs",
+    "smoke": "vite build --ssr scripts/render-entry.tsx --outDir dist-render --logLevel warn && node scripts/smoke.mjs",
     "gen:placeholders": "node scripts/gen-placeholders.mjs",
     "photos": "node scripts/fetch-photos.mjs"
   },
   "dependencies": {
-    "@tanstack/react-router": "^1.170.25",
-    "@tanstack/react-start": "^1.168.42",
     "react": "^19.2.0",
-    "react-dom": "^19.2.0"
+    "react-dom": "^19.2.0",
+    "react-router": "^8.3.0"
   },
   "devDependencies": {
     "@tailwindcss/vite": "^4.3.3",

@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react'
-import { Link } from '@tanstack/react-router'
+import { Link } from 'react-router'
 import { Breadcrumbs, type Crumb } from './Breadcrumbs'
 import { Icon } from './Icon'
 import { btn } from './ui'

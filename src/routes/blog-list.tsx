@@ -1,5 +1,7 @@
 import { useMemo, useState } from 'react'
-import { Link, createFileRoute } from '@tanstack/react-router'
+import { Link } from 'react-router'
+import { useRouteData } from '~/lib/router'
+import { Seo } from '~/components/Seo'
 
 import { Icon } from '~/components/Icon'
 import { PageHero } from '~/components/PageHero'
@@ -24,30 +26,28 @@ const TRAIL = [
   { label: 'Resource Center', href: '/blog' },
 ]
 
-export const Route = createFileRoute('/blog/')({
-  loader: async () => {
-    const [posts, featured, categories, services] = await Promise.all([
-      getPostCards(),
-      getFeaturedPostCard(),
-      getPostCategoriesWithCounts(),
-      getServiceCards(),
-    ])
-    const serviceNames = Object.fromEntries(services.map((s) => [s.slug, s.shortName]))
-    return { posts, featured, categories, serviceNames }
-  },
-  head: () =>
-    seo({
-      title: 'Electrical Resource Center — Guides for Austin Homeowners',
-      description:
-        'Plain-English guides on tripping breakers, panel upgrade costs, EV charging, rewiring, lighting and generators — written by the electricians who do the work.',
-      path: '/blog',
-      schema: breadcrumbSchema(TRAIL),
-    }),
-  component: BlogIndexPage,
-})
+export const loader = async () => {
+  const [posts, featured, categories, services] = await Promise.all([
+    getPostCards(),
+    getFeaturedPostCard(),
+    getPostCategoriesWithCounts(),
+    getServiceCards(),
+  ])
+  const serviceNames = Object.fromEntries(services.map((s) => [s.slug, s.shortName]))
+  return { posts, featured, categories, serviceNames }
+}
+
+const pageSeo = () =>
+  seo({
+    title: 'Electrical Resource Center — Guides for Austin Homeowners',
+    description:
+      'Plain-English guides on tripping breakers, panel upgrade costs, EV charging, rewiring, lighting and generators — written by the electricians who do the work.',
+    path: '/blog',
+    schema: breadcrumbSchema(TRAIL),
+  })
 
 function BlogIndexPage() {
-  const { posts, featured, categories, serviceNames } = Route.useLoaderData()
+  const { posts, featured, categories, serviceNames } = useRouteData<typeof loader>()
   const [category, setCategory] = useState('all')
   const [query, setQuery] = useState('')
 
@@ -69,6 +69,8 @@ function BlogIndexPage() {
 
   return (
     <>
+      <Seo {...pageSeo()} />
+
       <PageHero
         trail={TRAIL}
         eyebrow="Resource center"
@@ -84,8 +86,7 @@ function BlogIndexPage() {
             Featured article
           </h2>
           <Link
-            to="/blog/$articleSlug"
-            params={{ articleSlug: featured.slug }}
+            to={`/blog/${featured.slug}`}
             className="group grid gap-6 overflow-hidden rounded-panel border border-line bg-white shadow-card transition-shadow hover:shadow-lift lg:grid-cols-2"
           >
             <Photo
@@ -245,8 +246,7 @@ function PostCard({ post, serviceName }: { post: PostCardData; serviceName?: str
   return (
     <li className="h-full">
       <Link
-        to="/blog/$articleSlug"
-        params={{ articleSlug: post.slug }}
+        to={`/blog/${post.slug}`}
         className="group flex h-full flex-col overflow-hidden rounded-card border border-line bg-white shadow-card transition-all duration-200 hover:-translate-y-0.5 hover:border-brand-200 hover:shadow-lift"
       >
         <Photo image={post.image} aspect="16/9" rounded={false} sizes="(min-width: 768px) 33vw, 100vw" />
@@ -274,3 +274,5 @@ function PostCard({ post, serviceName }: { post: PostCardData; serviceName?: str
     </li>
   )
 }
+
+export { BlogIndexPage as Component }

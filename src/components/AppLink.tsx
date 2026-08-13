@@ -1,14 +1,16 @@
 import type { ReactNode } from 'react'
-import { Link } from '@tanstack/react-router'
+import { Link } from 'react-router'
 
 /**
- * A loosely-typed internal link.
+ * An internal link whose destination is built from data.
  *
- * Most navigation in the app uses TanStack's `<Link to="/services/$serviceSlug" params={…}>`
- * so paths stay type-checked against the route tree. This escape hatch exists
- * for the handful of places where the destination is a plain string built from
- * data — breadcrumb trails and CMS-driven nav lists — and keeps the cast in one
- * file rather than scattered through components.
+ * Breadcrumb trails, footer nav lists and the sitemap page take their paths
+ * from content records rather than writing them inline, so they cannot be
+ * checked against the route table. This wrapper marks those call sites as
+ * deliberate and keeps their prop surface small.
+ *
+ * For navigation that needs an active state, use `NavLink` directly — see
+ * `Header`.
  */
 export interface AppLinkProps {
   to: string
@@ -16,7 +18,6 @@ export interface AppLinkProps {
   className?: string
   title?: string
   id?: string
-  hash?: string
   'aria-label'?: string
   'aria-current'?: 'page' | 'true' | undefined
   onClick?: () => void
@@ -24,7 +25,7 @@ export interface AppLinkProps {
 
 export function AppLink({ to, children, ...rest }: AppLinkProps) {
   return (
-    <Link to={to as never} {...rest}>
+    <Link to={to} {...rest}>
       {children}
     </Link>
   )

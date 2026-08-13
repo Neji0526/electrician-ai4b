@@ -1,4 +1,7 @@
-import { Link, createFileRoute, notFound } from '@tanstack/react-router'
+import { Link } from 'react-router'
+import type { LoaderFunctionArgs } from 'react-router'
+import { useRouteData, notFound, requireParam } from '~/lib/router'
+import { Seo } from '~/components/Seo'
 
 import { Icon } from '~/components/Icon'
 import { PageHero } from '~/components/PageHero'
@@ -25,48 +28,48 @@ import { seo } from '~/lib/seo'
 import { areaSchema, breadcrumbSchema, faqSchema } from '~/lib/schema'
 import { trackPhone } from '~/lib/analytics'
 
-export const Route = createFileRoute('/service-areas/$locationSlug')({
-  loader: async ({ params }) => {
-    const area = await getArea(params.locationSlug)
-    if (!area) throw notFound()
+export const loader = async ({ params }: LoaderFunctionArgs) => {
+  const area = await getArea(requireParam(params, 'locationSlug'))
+  if (!area) throw notFound()
 
-    const [allServices, projects, reviews, faqs, allAreas] = await Promise.all([
-      getServiceOptions(),
-      getProjectCards({ city: area.city, limit: 3 }),
-      getReviews({ city: area.city, limit: 3 }),
-      getFaqs({ category: 'Appointments & Scheduling', limit: 5 }),
-      getAreaCards(),
-    ])
+  const [allServices, projects, reviews, faqs, allAreas] = await Promise.all([
+    getServiceOptions(),
+    getProjectCards({ city: area.city, limit: 3 }),
+    getReviews({ city: area.city, limit: 3 }),
+    getFaqs({ category: 'Appointments & Scheduling', limit: 5 }),
+    getAreaCards(),
+  ])
 
-    const featured = await getServiceCardsBySlug(area.featuredServices)
+  const featured = await getServiceCardsBySlug(area.featuredServices)
 
-    // Fall back to strong general reviews so a quieter area page is never empty.
-    const localReviews = reviews.length
-      ? reviews
-      : (await getReviews({ limit: 3 }))
+  // Fall back to strong general reviews so a quieter area page is never empty.
+  const localReviews = reviews.length
+    ? reviews
+    : (await getReviews({ limit: 3 }))
 
-    return { area, featured, allServices, projects, reviews: localReviews, faqs, allAreas }
-  },
-  head: ({ loaderData }) => {
-    if (!loaderData) return {}
-    const { area, faqs } = loaderData
-    const trail = [
-      { label: 'Home', href: '/' },
-      { label: 'Service Areas', href: '/service-areas' },
-      { label: area.city, href: `/service-areas/${area.slug}` },
-    ]
-    return seo({
-      title: area.seo.title,
-      description: area.seo.description,
-      path: `/service-areas/${area.slug}`,
-      schema: [areaSchema(area), breadcrumbSchema(trail), faqSchema(faqs)],
-    })
-  },
-  component: ServiceAreaPage,
-})
+  return { area, featured, allServices, projects, reviews: localReviews, faqs, allAreas }
+}
+
+type RouteData = Awaited<ReturnType<typeof loader>>
+
+const pageSeo = ({ loaderData }: { loaderData: RouteData }) => {
+  const { area, faqs } = loaderData
+  const trail = [
+    { label: 'Home', href: '/' },
+    { label: 'Service Areas', href: '/service-areas' },
+    { label: area.city, href: `/service-areas/${area.slug}` },
+  ]
+  return seo({
+    title: area.seo.title,
+    description: area.seo.description,
+    path: `/service-areas/${area.slug}`,
+    schema: [areaSchema(area), breadcrumbSchema(trail), faqSchema(faqs)],
+  })
+}
 
 function ServiceAreaPage() {
-  const { area, featured, allServices, projects, reviews, faqs, allAreas } = Route.useLoaderData()
+  const data = useRouteData<typeof loader>()
+  const { area, featured, allServices, projects, reviews, faqs, allAreas } = data
 
   const trail = [
     { label: 'Home', href: '/' },
@@ -78,6 +81,8 @@ function ServiceAreaPage() {
 
   return (
     <>
+      <Seo {...pageSeo({ loaderData: data })} />
+
       <PageHero
         trail={trail}
         eyebrow={`${area.county} · ${area.state}`}
@@ -240,8 +245,7 @@ function ServiceAreaPage() {
           {others.map((other) => (
             <li key={other.slug}>
               <Link
-                to="/service-areas/$locationSlug"
-                params={{ locationSlug: other.slug }}
+                to={`/service-areas/${other.slug}`}
                 className="inline-flex items-center gap-1.5 rounded-full border border-line-strong bg-white px-4 py-2 text-[0.9375rem] font-semibold text-ink-soft transition-colors hover:border-brand-300 hover:text-brand-700"
               >
                 <Icon name="map-pin" size={15} />
@@ -260,3 +264,5 @@ function ServiceAreaPage() {
     </>
   )
 }
+
+export { ServiceAreaPage as Component }

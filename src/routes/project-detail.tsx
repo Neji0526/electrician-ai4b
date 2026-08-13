@@ -1,4 +1,7 @@
-import { Link, createFileRoute, notFound } from '@tanstack/react-router'
+import { Link } from 'react-router'
+import type { LoaderFunctionArgs } from 'react-router'
+import { useRouteData, notFound, requireParam } from '~/lib/router'
+import { Seo } from '~/components/Seo'
 
 import { Icon } from '~/components/Icon'
 import { PageHero } from '~/components/PageHero'
@@ -12,44 +15,44 @@ import { seo } from '~/lib/seo'
 import { breadcrumbSchema, projectSchema } from '~/lib/schema'
 import { formatDate } from '~/lib/format'
 
-export const Route = createFileRoute('/projects/$projectSlug')({
-  loader: async ({ params }) => {
-    const project = await getProject(params.projectSlug)
-    if (!project) throw notFound()
+export const loader = async ({ params }: LoaderFunctionArgs) => {
+  const project = await getProject(requireParam(params, 'projectSlug'))
+  if (!project) throw notFound()
 
-    const [service, related] = await Promise.all([
-      getService(project.serviceSlug),
-      getProjectCards({ serviceSlug: project.serviceSlug, limit: 4 }),
-    ])
+  const [service, related] = await Promise.all([
+    getService(project.serviceSlug),
+    getProjectCards({ serviceSlug: project.serviceSlug, limit: 4 }),
+  ])
 
-    return {
-      project,
-      service,
-      related: related.filter((p) => p.slug !== project.slug).slice(0, 3),
-    }
-  },
-  head: ({ loaderData }) => {
-    if (!loaderData) return {}
-    const { project, service } = loaderData
-    const trail = [
-      { label: 'Home', href: '/' },
-      { label: 'Projects', href: '/projects' },
-      { label: project.title, href: `/projects/${project.slug}` },
-    ]
-    return seo({
-      title: `${project.title} — ${project.neighborhood}, ${project.city}`,
-      description: project.summary,
-      path: `/projects/${project.slug}`,
-      image: project.after.src,
-      type: 'article',
-      schema: [projectSchema(project, service), breadcrumbSchema(trail)],
-    })
-  },
-  component: ProjectDetailPage,
-})
+  return {
+    project,
+    service,
+    related: related.filter((p) => p.slug !== project.slug).slice(0, 3),
+  }
+}
+
+type RouteData = Awaited<ReturnType<typeof loader>>
+
+const pageSeo = ({ loaderData }: { loaderData: RouteData }) => {
+  const { project, service } = loaderData
+  const trail = [
+    { label: 'Home', href: '/' },
+    { label: 'Projects', href: '/projects' },
+    { label: project.title, href: `/projects/${project.slug}` },
+  ]
+  return seo({
+    title: `${project.title} — ${project.neighborhood}, ${project.city}`,
+    description: project.summary,
+    path: `/projects/${project.slug}`,
+    image: project.after.src,
+    type: 'article',
+    schema: [projectSchema(project, service), breadcrumbSchema(trail)],
+  })
+}
 
 function ProjectDetailPage() {
-  const { project, service, related } = Route.useLoaderData()
+  const data = useRouteData<typeof loader>()
+  const { project, service, related } = data
 
   const trail = [
     { label: 'Home', href: '/' },
@@ -59,6 +62,8 @@ function ProjectDetailPage() {
 
   return (
     <>
+      <Seo {...pageSeo({ loaderData: data })} />
+
       <PageHero
         trail={trail}
         eyebrow={`${project.neighborhood}, ${project.city}`}
@@ -147,8 +152,7 @@ function ProjectDetailPage() {
 
               {service ? (
                 <Link
-                  to="/services/$serviceSlug"
-                  params={{ serviceSlug: service.slug }}
+                  to={`/services/${service.slug}`}
                   className={btn('secondary', 'md', 'mt-5 w-full')}
                 >
                   About {service.shortName.toLowerCase()}
@@ -194,3 +198,5 @@ function ProjectDetailPage() {
     </>
   )
 }
+
+export { ProjectDetailPage as Component }

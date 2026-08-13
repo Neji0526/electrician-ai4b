@@ -1,4 +1,4 @@
-import { Link } from '@tanstack/react-router'
+import { Link } from 'react-router'
 import { business } from '~/content/business'
 import { cx } from '~/lib/format'
 

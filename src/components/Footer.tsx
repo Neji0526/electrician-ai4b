@@ -1,4 +1,4 @@
-import { Link } from '@tanstack/react-router'
+import { Link } from 'react-router'
 import { AppLink } from './AppLink'
 import { Icon } from './Icon'
 import { footerNav } from './nav'
@@ -82,8 +82,7 @@ export function Footer() {
               {serviceDirectory.map((service) => (
                 <li key={service.slug}>
                   <Link
-                    to="/services/$serviceSlug"
-                    params={{ serviceSlug: service.slug }}
+                    to={`/services/${service.slug}`}
                     className="text-brand-300 underline-offset-2 hover:text-white hover:underline"
                   >
                     {service.label}
@@ -110,8 +109,7 @@ export function Footer() {
               {areaDirectory.slice(0, 5).map((area) => (
                 <li key={area.slug}>
                   <Link
-                    to="/service-areas/$locationSlug"
-                    params={{ locationSlug: area.slug }}
+                    to={`/service-areas/${area.slug}`}
                     className="text-brand-300 underline-offset-2 hover:text-white hover:underline"
                   >
                     {area.label}, {business.address.state}

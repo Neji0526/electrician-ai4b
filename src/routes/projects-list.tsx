@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react'
-import { createFileRoute } from '@tanstack/react-router'
+import { useRouteData } from '~/lib/router'
+import { Seo } from '~/components/Seo'
 
 import { Icon } from '~/components/Icon'
 import { PageHero } from '~/components/PageHero'
@@ -18,24 +19,22 @@ const TRAIL = [
   { label: 'Projects', href: '/projects' },
 ]
 
-export const Route = createFileRoute('/projects/')({
-  loader: async () => {
-    const [projects, services] = await Promise.all([getProjectCards(), getServiceCards()])
-    return { projects, services }
-  },
-  head: () =>
-    seo({
-      title: `Recent Electrical Projects in ${business.address.city}, ${business.address.state}`,
-      description:
-        'Before-and-after photos and full write-ups of panel upgrades, rewires, EV chargers, generators and commercial finish-outs completed across the Austin area.',
-      path: '/projects',
-      schema: breadcrumbSchema(TRAIL),
-    }),
-  component: ProjectsPage,
-})
+export const loader = async () => {
+  const [projects, services] = await Promise.all([getProjectCards(), getServiceCards()])
+  return { projects, services }
+}
+
+const pageSeo = () =>
+  seo({
+    title: `Recent Electrical Projects in ${business.address.city}, ${business.address.state}`,
+    description:
+      'Before-and-after photos and full write-ups of panel upgrades, rewires, EV chargers, generators and commercial finish-outs completed across the Austin area.',
+    path: '/projects',
+    schema: breadcrumbSchema(TRAIL),
+  })
 
 function ProjectsPage() {
-  const { projects, services } = Route.useLoaderData()
+  const { projects, services } = useRouteData<typeof loader>()
   const [serviceSlug, setServiceSlug] = useState('all')
   const [city, setCity] = useState('all')
 
@@ -61,6 +60,8 @@ function ProjectsPage() {
 
   return (
     <>
+      <Seo {...pageSeo()} />
+
       <PageHero
         trail={TRAIL}
         eyebrow="Our work"
@@ -166,3 +167,5 @@ function ProjectsPage() {
     </>
   )
 }
+
+export { ProjectsPage as Component }

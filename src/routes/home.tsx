@@ -1,4 +1,6 @@
-import { Link, createFileRoute } from '@tanstack/react-router'
+import { Link } from 'react-router'
+import { useRouteData } from '~/lib/router'
+import { Seo } from '~/components/Seo'
 
 import { AppLink } from '~/components/AppLink'
 import { Icon } from '~/components/Icon'
@@ -108,36 +110,36 @@ const TIPS = [
 /** The four questions in the design's "Answers before you call" accordion. */
 const HOME_FAQ_IDS = ['f-01', 'f-11', 'f-82', 'f-80']
 
-export const Route = createFileRoute('/')({
-  loader: async () => {
-    const [services, serviceOptions, projects, reviews, allFaqs] = await Promise.all([
-      getServiceCardsBySlug(HOME_SERVICES),
-      getServiceOptions(),
-      getProjectCards({ limit: 4 }),
-      getReviews({ limit: 3 }),
-      getFaqs(),
-    ])
+export const loader = async () => {
+  const [services, serviceOptions, projects, reviews, allFaqs] = await Promise.all([
+    getServiceCardsBySlug(HOME_SERVICES),
+    getServiceOptions(),
+    getProjectCards({ limit: 4 }),
+    getReviews({ limit: 3 }),
+    getFaqs(),
+  ])
 
-    const faqs = HOME_FAQ_IDS.map((id) => allFaqs.find((f) => f.id === id)).filter(
-      (f): f is Faq => Boolean(f),
-    )
+  const faqs = HOME_FAQ_IDS.map((id) => allFaqs.find((f) => f.id === id)).filter(
+    (f): f is Faq => Boolean(f),
+  )
 
-    return { services, serviceOptions, projects, reviews, faqs }
-  },
-  head: () =>
-    seo({
-      title: `Reliable Electricians in ${business.address.city} — Done Right, Done Safely`,
-      description: business.seo.defaultDescription,
-      path: '/',
-    }),
-  component: HomePage,
-})
+  return { services, serviceOptions, projects, reviews, faqs }
+}
+
+const pageSeo = () =>
+  seo({
+    title: `Reliable Electricians in ${business.address.city} — Done Right, Done Safely`,
+    description: business.seo.defaultDescription,
+    path: '/',
+  })
 
 function HomePage() {
-  const { services, serviceOptions, projects, reviews, faqs } = Route.useLoaderData()
+  const { services, serviceOptions, projects, reviews, faqs } = useRouteData<typeof loader>()
 
   return (
     <>
+      <Seo {...pageSeo()} />
+
       <HeroSection serviceOptions={serviceOptions} />
 
       <div className="border-b border-line bg-white">
@@ -310,8 +312,7 @@ function ServicesSection({ services }: { services: ServiceCardData[] }) {
             return (
               <li key={service.slug} className="h-full">
                 <Link
-                  to="/services/$serviceSlug"
-                  params={{ serviceSlug: service.slug }}
+                  to={`/services/${service.slug}`}
                   className="group flex h-full flex-col rounded-card border border-line bg-white p-5 shadow-card transition-all duration-200 hover:-translate-y-0.5 hover:border-brand-200 hover:shadow-lift"
                 >
                   <span className="grid h-11 w-11 place-items-center rounded-lg border border-line bg-surface text-brand-600 transition-colors group-hover:border-brand-200 group-hover:bg-brand-50">
@@ -518,8 +519,7 @@ function RecentProjects({ projects }: { projects: ProjectCardData[] }) {
         {projects.map((project) => (
           <li key={project.slug} className="h-full">
             <Link
-              to="/projects/$projectSlug"
-              params={{ projectSlug: project.slug }}
+              to={`/projects/${project.slug}`}
               className="group flex h-full flex-col overflow-hidden rounded-card border border-line bg-white shadow-card transition-all duration-200 hover:-translate-y-0.5 hover:border-brand-200 hover:shadow-lift"
             >
               <div className="relative">
@@ -733,3 +733,5 @@ function FinalCta() {
     </section>
   )
 }
+
+export { HomePage as Component }
