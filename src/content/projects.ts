@@ -1,7 +1,7 @@
 import type { Project } from './types.ts'
 
 const shot = (slug: string, kind: 'before' | 'after', alt: string) => ({
-  src: `/images/projects/${slug}-${kind}.svg`,
+  src: `/images/projects/${slug}-${kind}.jpg`,
   alt,
   width: 1200,
   height: 900,

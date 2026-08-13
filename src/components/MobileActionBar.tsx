@@ -26,9 +26,9 @@ export function MobileActionBar() {
           <Link
             to="/request-estimate"
             onClick={() => trackEstimate('mobile_action_bar')}
-            className="flex min-h-12 items-center justify-center gap-2 rounded-btn bg-brand-600 text-base font-bold text-white"
+            className="flex min-h-12 items-center justify-center gap-2 rounded-btn bg-accent-400 text-base font-bold text-brand-950"
           >
-            Free Estimate
+            Free Quote
           </Link>
         </div>
       </div>

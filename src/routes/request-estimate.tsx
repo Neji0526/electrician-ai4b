@@ -35,7 +35,7 @@ export const Route = createFileRoute('/request-estimate')({
   head: () =>
     seo({
       title: 'Request a Free Electrical Estimate in Austin, TX',
-      description: `Free estimates on planned electrical work across ${business.serviceAreaSummary}. Fixed price before work starts, licensed electricians, and a 2-year workmanship warranty.`,
+      description: `Free estimates on planned electrical work across ${business.serviceAreaSummary}. Fixed price before work starts, licensed electricians, and an 8-year workmanship warranty.`,
       path: '/request-estimate',
       schema: breadcrumbSchema(TRAIL),
     }),

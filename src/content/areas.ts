@@ -47,7 +47,7 @@ export const areas: ServiceArea[] = [
     seo: {
       title: 'Electrician in Austin, TX | Licensed & Insured',
       description:
-        'Licensed Austin electricians for panel upgrades, EV chargers, rewiring and 24/7 emergency repair. Same-day slots, upfront pricing, 2-year workmanship warranty.',
+        'Licensed Austin electricians for panel upgrades, EV chargers, rewiring and 24/7 emergency repair. Same-day slots, upfront pricing, 8-year workmanship warranty.',
     },
   },
 

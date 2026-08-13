@@ -1,3 +1,4 @@
+import { fileURLToPath } from 'node:url'
 import { defineConfig } from 'vite'
 import tailwindcss from '@tailwindcss/vite'
 import { tanstackStart } from '@tanstack/react-start/plugin/vite'
@@ -38,11 +39,21 @@ const sitemapPages = [
   page('/contact', 0.8, 'monthly'),
   page('/request-estimate', 0.9, 'monthly'),
   page('/sitemap', 0.3, 'weekly'),
+  page('/credits', 0.2, 'yearly'),
   page('/privacy', 0.2, 'yearly'),
   page('/terms', 0.2, 'yearly'),
 ]
 
 export default defineConfig({
+  resolve: {
+    alias: {
+      // `~` is declared in tsconfig `paths` for the editor and the type checker.
+      // The bundler honours tsconfig paths at build time, but the dev SSR module
+      // runner does not — without this alias `npm run dev` cannot resolve
+      // `~/styles/app.css?url` and every route 500s. Keep both in sync.
+      '~': fileURLToPath(new URL('./src', import.meta.url)),
+    },
+  },
   plugins: [
     tailwindcss(),
     tanstackStart({

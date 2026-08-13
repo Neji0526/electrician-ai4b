@@ -3,7 +3,7 @@ import type { Post } from './types.ts'
 export { postCategories } from './taxonomy.ts'
 
 const cover = (slug: string, alt: string) => ({
-  src: `/images/blog/${slug}.svg`,
+  src: `/images/blog/${slug}.jpg`,
   alt,
   width: 1200,
   height: 675,

@@ -355,7 +355,7 @@ export const faqs: Faq[] = [
     featured: true,
     question: 'What does your warranty cover?',
     answer:
-      'Two years on workmanship for repairs and installations, five years on panels, service upgrades and rewires. Materials carry the manufacturer warranty, and we handle the claim on your behalf rather than handing you a phone number. If something we installed fails within the warranty period, we come back at no charge.',
+      'Eight years on workmanship, covering the labor on every repair and installation we do. Materials carry the manufacturer warranty, and we handle the claim on your behalf rather than handing you a phone number. If something we installed fails within the warranty period, we come back at no charge.',
   },
   {
     id: 'f-81',

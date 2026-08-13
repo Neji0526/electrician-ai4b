@@ -1,7 +1,7 @@
 import type { Service } from './types.ts'
 
 const img = (slug: string, alt: string) => ({
-  src: `/images/services/${slug}.svg`,
+  src: `/images/services/${slug}.jpg`,
   alt,
   width: 1200,
   height: 800,

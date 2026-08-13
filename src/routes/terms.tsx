@@ -104,9 +104,9 @@ function TermsPage() {
 
           <h2>Workmanship warranty</h2>
           <p>
-            We warrant our workmanship for two years from completion on repairs and installations,
-            and five years on panel replacements, service upgrades and rewires. If work we performed
-            fails within that period we will return and correct it at no charge.
+            We warrant our workmanship for eight years from completion, covering the labor on every
+            repair and installation we perform. If work we performed fails within that period we
+            will return and correct it at no charge.
           </p>
           <p>The warranty covers our workmanship. It does not cover:</p>
           <ul>

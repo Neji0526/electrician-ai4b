@@ -243,6 +243,20 @@ for (const [slug, name] of team) {
 
 written.push(
   write(
+    'images/home/hero-house.svg',
+    svg({
+      width: 1200,
+      height: 1000,
+      label: 'Homepage hero photograph',
+      caption: 'Evening exterior of an Austin home with the lighting on',
+      tone: 'dark',
+      tag: 'Hero',
+    }),
+  ),
+)
+
+written.push(
+  write(
     'images/og-default.svg',
     svg({
       width: 1200,

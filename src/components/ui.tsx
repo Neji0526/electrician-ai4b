@@ -8,16 +8,20 @@ import { cx } from '~/lib/format'
    fighting the router's typed links.
    ========================================================================== */
 
-export type ButtonVariant = 'primary' | 'secondary' | 'emergency' | 'ghost' | 'white'
+export type ButtonVariant = 'cta' | 'primary' | 'secondary' | 'emergency' | 'ghost' | 'white' | 'outline-light'
 export type ButtonSize = 'sm' | 'md' | 'lg'
 
 const VARIANTS: Record<ButtonVariant, string> = {
+  // The brand's headline call to action: amber on navy text. High contrast
+  // against both the white header and the dark navy bands.
+  cta: 'bg-accent-400 text-brand-950 hover:bg-accent-300 active:bg-accent-500 shadow-card',
   primary: 'bg-brand-600 text-white hover:bg-brand-700 active:bg-brand-800 shadow-card',
   secondary:
     'bg-white text-brand-700 border border-line-strong hover:border-brand-400 hover:bg-brand-50',
   emergency: 'bg-accent-700 text-white hover:bg-accent-800 active:bg-accent-900 shadow-card',
   ghost: 'text-brand-700 hover:bg-brand-50',
   white: 'bg-white text-brand-700 hover:bg-brand-50 shadow-card',
+  'outline-light': 'border border-white/35 text-white hover:border-white/70 hover:bg-white/10',
 }
 
 const SIZES: Record<ButtonSize, string> = {

@@ -8,11 +8,12 @@ export const business: Business = {
   name: 'Hill Country Electric',
   legalName: 'Hill Country Electric Co., LLC',
   tagline: 'Licensed electricians serving Austin and the surrounding Hill Country',
-  phone: '(512) 555-0142',
-  phoneHref: 'tel:+15125550142',
-  emergencyPhone: '(512) 555-0199',
-  emergencyPhoneHref: 'tel:+15125550199',
-  email: 'office@hillcountryelectric.com',
+  // One public number, used for both scheduling and the 24/7 emergency line.
+  phone: '(512) 555-0108',
+  phoneHref: 'tel:+15125550108',
+  emergencyPhone: '(512) 555-0108',
+  emergencyPhoneHref: 'tel:+15125550108',
+  email: 'hello@hillcountryelectric.com',
   address: {
     street: '4212 Burnet Road, Suite B',
     city: 'Austin',
@@ -59,10 +60,11 @@ export const business: Business = {
   founded: 2009,
   yearsInBusiness: new Date().getFullYear() - 2009,
   projectsCompleted: 9400,
-  rating: 4.9,
-  reviewCount: 412,
+  rating: 5.0,
+  reviewCount: 1200,
   serviceAreaSummary: 'Austin, Round Rock, Cedar Park, Georgetown, Pflugerville, Lakeway, Kyle & Buda',
-  warranty: 'Every repair carries a 2-year workmanship warranty. Panels, service upgrades and rewires carry 5 years.',
+  warrantyYears: 8,
+  warranty: 'Every job carries an 8-year workmanship warranty on labor. Materials are covered by the manufacturer, and we file the claim for you.',
   financing: {
     enabled: true,
     headline: 'Financing for panel upgrades and rewires',
@@ -84,33 +86,41 @@ export const business: Business = {
     titleSuffix: 'Hill Country Electric | Austin, TX',
     defaultTitle: 'Licensed Electricians in Austin, TX | Hill Country Electric',
     defaultDescription:
-      'Licensed, insured Austin electricians for panel upgrades, EV chargers, rewiring, lighting and 24/7 emergency repair. Upfront pricing and a 2-year workmanship warranty.',
+      'Licensed, insured Austin electricians for panel upgrades, EV chargers, rewiring, lighting and 24/7 emergency repair. Upfront pricing and an 8-year workmanship warranty.',
     siteUrl: 'https://www.hillcountryelectric.com',
-    ogImage: '/images/og-default.svg',
+    ogImage: '/images/og-default.jpg',
   },
 }
 
 export const trustPoints = [
   {
-    icon: 'shield',
-    title: 'Licensed & insured',
-    text: `${business.license.number} — $2M liability, workers’ comp on every crew`,
-  },
-  {
-    icon: 'tag',
-    title: 'Upfront pricing',
-    text: 'You approve the price before any work starts. No hourly surprises.',
-  },
-  {
     icon: 'clock',
-    title: 'Same-day service',
-    text: 'Same-day slots held open every weekday for repairs that cannot wait.',
+    title: 'Same-Day Service',
+    text: 'We’re available when you need us most.',
+  },
+  {
+    icon: 'hand-heart',
+    title: 'Clean & Respectful',
+    text: 'We treat your home like our own.',
+  },
+  {
+    icon: 'dollar',
+    title: 'Upfront Pricing',
+    text: 'No hidden fees. You’ll know before we start.',
   },
   {
     icon: 'badge',
-    title: 'Workmanship guaranteed',
-    text: '2-year warranty on repairs, 5 years on panels and rewires.',
+    title: 'Workmanship Guaranteed',
+    text: 'Quality work backed by a satisfaction guarantee.',
   },
+] as const
+
+/** Short reasons shown beside the stats block on the homepage. */
+export const whyChooseUsPoints = [
+  'Upfront estimates, not surprises',
+  'Local, licensed, and experienced',
+  'Safety comes first',
+  'Quality you can count on',
 ] as const
 
 export const whyChooseUs = [
