@@ -1,4 +1,4 @@
-import { Link } from '@tanstack/react-router'
+import { Link } from 'react-router'
 import { Icon } from './Icon'
 import { business } from '~/content/business'
 import { trackEstimate, trackPhone } from '~/lib/analytics'

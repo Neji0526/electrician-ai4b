@@ -1,4 +1,5 @@
-import { createFileRoute } from '@tanstack/react-router'
+import { useRouteData } from '~/lib/router'
+import { Seo } from '~/components/Seo'
 
 import { Icon } from '~/components/Icon'
 import { PageHero } from '~/components/PageHero'
@@ -18,24 +19,24 @@ const TRAIL = [
   { label: 'Service Areas', href: '/service-areas' },
 ]
 
-export const Route = createFileRoute('/service-areas/')({
-  loader: async () => ({ areas: await getAreaCards() }),
-  head: () =>
-    seo({
-      title: `Electrician Service Areas — ${business.address.city} & Central Texas`,
-      description: `Licensed electricians serving ${business.serviceAreaSummary}. Same-day repair slots, 24/7 emergency response and full permit handling across Travis, Williamson and Hays counties.`,
-      path: '/service-areas',
-      schema: breadcrumbSchema(TRAIL),
-    }),
-  component: ServiceAreasPage,
-})
+export const loader = async () => ({ areas: await getAreaCards() })
+
+const pageSeo = () =>
+  seo({
+    title: `Electrician Service Areas — ${business.address.city} & Central Texas`,
+    description: `Licensed electricians serving ${business.serviceAreaSummary}. Same-day repair slots, 24/7 emergency response and full permit handling across Travis, Williamson and Hays counties.`,
+    path: '/service-areas',
+    schema: breadcrumbSchema(TRAIL),
+  })
 
 function ServiceAreasPage() {
-  const { areas } = Route.useLoaderData()
+  const { areas } = useRouteData<typeof loader>()
   const allZips = areas.flatMap((a) => a.zips)
 
   return (
     <>
+      <Seo {...pageSeo()} />
+
       <PageHero
         trail={TRAIL}
         eyebrow="Where we work"
@@ -137,3 +138,5 @@ function ServiceAreasPage() {
     </>
   )
 }
+
+export { ServiceAreasPage as Component }

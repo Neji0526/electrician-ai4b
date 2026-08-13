@@ -1,4 +1,4 @@
-import { createFileRoute } from '@tanstack/react-router'
+import { Seo } from '~/components/Seo'
 
 import { PageHero } from '~/components/PageHero'
 import { Section } from '~/components/ui'
@@ -13,20 +13,19 @@ const TRAIL = [
 
 const UPDATED = 'January 15, 2026'
 
-export const Route = createFileRoute('/privacy')({
-  head: () =>
-    seo({
-      title: 'Privacy Policy',
-      description: `How ${business.name} collects, uses and protects the information you share when requesting an estimate or contacting us.`,
-      path: '/privacy',
-      schema: breadcrumbSchema(TRAIL),
-    }),
-  component: PrivacyPage,
-})
+const pageSeo = () =>
+  seo({
+    title: 'Privacy Policy',
+    description: `How ${business.name} collects, uses and protects the information you share when requesting an estimate or contacting us.`,
+    path: '/privacy',
+    schema: breadcrumbSchema(TRAIL),
+  })
 
 function PrivacyPage() {
   return (
     <>
+      <Seo {...pageSeo()} />
+
       <PageHero
         trail={TRAIL}
         title="Privacy policy"
@@ -147,3 +146,5 @@ function PrivacyPage() {
     </>
   )
 }
+
+export { PrivacyPage as Component }

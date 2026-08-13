@@ -1,4 +1,6 @@
-import { createFileRoute } from '@tanstack/react-router'
+import { useSearchParams } from 'react-router'
+import { useRouteData } from '~/lib/router'
+import { Seo } from '~/components/Seo'
 
 import { Icon } from '~/components/Icon'
 import { Breadcrumbs } from '~/components/Breadcrumbs'
@@ -19,35 +21,34 @@ const TRAIL = [
   { label: 'Request an Estimate', href: '/request-estimate' },
 ]
 
-export const Route = createFileRoute('/request-estimate')({
-  // `service` is optional — declaring it as an optional key keeps every
-  // `<Link to="/request-estimate">` on the site free of a required search prop.
-  validateSearch: (search: Record<string, unknown>): { service?: string } =>
-    typeof search.service === 'string' ? { service: search.service } : {},
-  loader: async () => {
-    const [services, reviews, faqs] = await Promise.all([
-      getServiceOptions(),
-      getFeaturedReviews(2),
-      getFaqs({ category: 'Pricing & Estimates', limit: 4 }),
-    ])
-    return { services, reviews, faqs }
-  },
-  head: () =>
-    seo({
-      title: 'Request a Free Electrical Estimate in Austin, TX',
-      description: `Free estimates on planned electrical work across ${business.serviceAreaSummary}. Fixed price before work starts, licensed electricians, and an 8-year workmanship warranty.`,
-      path: '/request-estimate',
-      schema: breadcrumbSchema(TRAIL),
-    }),
-  component: RequestEstimatePage,
-})
+export const loader = async () => {
+  const [services, reviews, faqs] = await Promise.all([
+    getServiceOptions(),
+    getFeaturedReviews(2),
+    getFaqs({ category: 'Pricing & Estimates', limit: 4 }),
+  ])
+  return { services, reviews, faqs }
+}
+
+const pageSeo = () =>
+  seo({
+    title: 'Request a Free Electrical Estimate in Austin, TX',
+    description: `Free estimates on planned electrical work across ${business.serviceAreaSummary}. Fixed price before work starts, licensed electricians, and an 8-year workmanship warranty.`,
+    path: '/request-estimate',
+    schema: breadcrumbSchema(TRAIL),
+  })
 
 function RequestEstimatePage() {
-  const { services, reviews, faqs } = Route.useLoaderData()
-  const { service } = Route.useSearch()
+  const { services, reviews, faqs } = useRouteData<typeof loader>()
+
+  // `?service=<slug>` preselects the dropdown when a service page links here.
+  // Anything unrecognised is ignored by the form rather than validated up front.
+  const service = useSearchParams()[0].get('service') ?? undefined
 
   return (
     <>
+      <Seo {...pageSeo()} />
+
       <section className="border-b border-line bg-surface">
         <div className="container-page py-8 md:py-12">
           <Breadcrumbs trail={TRAIL} className="mb-6" />
@@ -181,3 +182,5 @@ function RequestEstimatePage() {
     </>
   )
 }
+
+export { RequestEstimatePage as Component }

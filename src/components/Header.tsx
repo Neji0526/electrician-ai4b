@@ -1,9 +1,8 @@
 import { useEffect, useState } from 'react'
-import { Link } from '@tanstack/react-router'
+import { Link, NavLink } from 'react-router'
 import { Logo } from './Logo'
 import { Icon } from './Icon'
 import { MobileNav } from './MobileNav'
-import { AppLink } from './AppLink'
 import { btn } from './ui'
 import { primaryNav } from './nav'
 import { business } from '~/content/business'
@@ -43,19 +42,21 @@ export function Header() {
           <ul className="flex items-center gap-1">
             {primaryNav.map((item) => (
               <li key={item.href}>
-                <AppLink
+                <NavLink
                   to={item.href}
                   className={cx(
                     'relative block px-3 py-2 text-[0.9375rem] font-medium text-ink-soft',
                     'transition-colors hover:text-brand-700',
                     // Active items get an underline rule, matching the design.
-                    'data-[status=active]:font-semibold data-[status=active]:text-ink',
+                    // NavLink marks the current section with aria-current="page",
+                    // which drives both the styling and the screen-reader cue.
+                    'aria-[current=page]:font-semibold aria-[current=page]:text-ink',
                     'after:absolute after:inset-x-3 after:-bottom-0.5 after:h-0.5 after:rounded-full',
-                    'after:bg-transparent data-[status=active]:after:bg-brand-600',
+                    'after:bg-transparent aria-[current=page]:after:bg-brand-600',
                   )}
                 >
                   {item.label}
-                </AppLink>
+                </NavLink>
               </li>
             ))}
           </ul>

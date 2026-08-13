@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react'
-import { createFileRoute } from '@tanstack/react-router'
+import { useRouteData } from '~/lib/router'
+import { Seo } from '~/components/Seo'
 
 import { Icon } from '~/components/Icon'
 import { PageHero } from '~/components/PageHero'
@@ -20,32 +21,33 @@ const TRAIL = [
   { label: 'Services', href: '/services' },
 ]
 
-export const Route = createFileRoute('/services/')({
-  loader: async () => {
-    const [services, faqs] = await Promise.all([
-      getServiceCards(),
-      getFaqs({ category: 'Pricing & Estimates', limit: 6 }),
-    ])
-    return { services, faqs }
-  },
-  head: ({ loaderData }) =>
-    seo({
-      title: `Electrical Services in ${business.address.city}, ${business.address.state}`,
-      description:
-        'Panel upgrades, EV chargers, rewiring, lighting, generators, inspections and 24/7 emergency repair. Licensed Austin electricians with upfront pricing on every job.',
-      path: '/services',
-      schema: [
-        breadcrumbSchema(TRAIL),
-        ...(loaderData?.faqs ? [faqSchema(loaderData.faqs)] : []),
-      ],
-    }),
-  component: ServicesPage,
-})
+export const loader = async () => {
+  const [services, faqs] = await Promise.all([
+    getServiceCards(),
+    getFaqs({ category: 'Pricing & Estimates', limit: 6 }),
+  ])
+  return { services, faqs }
+}
+
+type RouteData = Awaited<ReturnType<typeof loader>>
+
+const pageSeo = ({ loaderData }: { loaderData: RouteData }) =>
+  seo({
+    title: `Electrical Services in ${business.address.city}, ${business.address.state}`,
+    description:
+      'Panel upgrades, EV chargers, rewiring, lighting, generators, inspections and 24/7 emergency repair. Licensed Austin electricians with upfront pricing on every job.',
+    path: '/services',
+    schema: [
+      breadcrumbSchema(TRAIL),
+      ...(loaderData?.faqs ? [faqSchema(loaderData.faqs)] : []),
+    ],
+  })
 
 type AudienceFilter = 'all' | 'residential' | 'commercial'
 
 function ServicesPage() {
-  const { services, faqs } = Route.useLoaderData()
+  const data = useRouteData<typeof loader>()
+  const { services, faqs } = data
   const [category, setCategory] = useState<string>('all')
   const [audience, setAudience] = useState<AudienceFilter>('all')
 
@@ -64,6 +66,8 @@ function ServicesPage() {
 
   return (
     <>
+      <Seo {...pageSeo({ loaderData: data })} />
+
       <PageHero
         trail={TRAIL}
         eyebrow="Our services"
@@ -227,3 +231,5 @@ function ServicesPage() {
     </>
   )
 }
+
+export { ServicesPage as Component }

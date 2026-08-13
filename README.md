@@ -1,16 +1,22 @@
 # Hill Country Electric — lead-generation website
 
 Production-ready **frontend** for a local electrical contractor, built with React 19 and
-TanStack Start (TanStack Router SSR) on Vite.
+React Router 8 on Vite. It is a **client-rendered single-page app** that builds to static
+files — no Node server at runtime.
 
-Every page is server-rendered, every route emits its own metadata and structured data, and
-the whole site is optimised around four questions a visitor actually has: *what do they do,
-do they serve me, can I trust them, how do I get hold of them.*
+Every route emits its own metadata and structured data, and the whole site is optimised
+around four questions a visitor actually has: *what do they do, do they serve me, can I
+trust them, how do I get hold of them.*
 
 > **Scope:** this build is frontend only, as requested. There is no backend and no database.
 > All content is served from typed modules under `src/content`, shaped so each one can be
 > swapped for a Supabase query without touching a route or a component. See
 > [Wiring up a backend](#wiring-up-a-backend).
+
+> **Read [SEO](#seo) before launch.** This was previously a server-rendered app and was
+> converted to an SPA on request. Server-rendered HTML is what made the SEO work; a
+> client-rendered app gives crawlers an empty shell until they execute JavaScript. The
+> tradeoff and the ways to claw it back are written up in that section.
 
 ---
 
@@ -19,61 +25,120 @@ do they serve me, can I trust them, how do I get hold of them.*
 ```bash
 npm install
 npm run photos             # downloads the licensed photography into public/
-npm run dev                # http://localhost:3000
+npm run dev                # http://127.0.0.1:3000
 ```
 
 | Script | What it does |
 | --- | --- |
-| `npm run dev` | Vite dev server with SSR and HMR |
-| `npm run build` | Production build → `dist/client` + `dist/server`, and writes `sitemap.xml` |
-| `npm start` | Serves the production build |
+| `npm run dev` | Vite dev server with HMR |
+| `npm run build` | Production build → static files in `dist/`, and writes `sitemap.xml` |
+| `npm run preview` | Serves `dist/` locally with SPA fallback |
 | `npm run typecheck` | `tsc --noEmit` |
-| `npm run smoke` | Renders **every** route through the built SSR handler and asserts the output |
+| `npm run smoke` | Renders **every** route through the real route table and asserts the output |
 | `npm run photos` | Downloads licensed photography from Wikimedia Commons + writes credits |
 | `npm run gen:placeholders` | Regenerates the SVG placeholders (team slots, fallbacks) |
 
-**Node 22.12+ is recommended** — that is what `@tanstack/react-start` declares. It builds and
-runs on Node 20, which is what this was developed against, but you will see an engine warning.
+The dev server binds `127.0.0.1` explicitly (see `server.host` in `vite.config.ts`). Vite
+prefers IPv6 `::1` by default, which some Windows hosts refuse with `EACCES` — the server
+starts fine and then nothing can reach it.
 
 ### The smoke test
 
-`npm run build && npm run smoke` imports the built server handler and renders all 60 URLs
-in-process. For each one it asserts a 200 (404 for the not-found route), exactly one `<h1>`,
-a `<title>`, a meta description, a canonical URL, at least one JSON-LD block, the phone
-number present in the *server* HTML, and an estimate CTA. It also checks that
-`src/content/directory.ts` has not drifted from the real content.
+`npm run build && npm run smoke` checks 60 routes plus the build output. It first builds a
+small SSR harness (`scripts/render-entry.tsx`, output in `dist-render/`, never shipped) that
+runs the **real route table and the real loaders** through React Router's static handler in
+Node. For each route it asserts a 200 — 404 for the not-found route — exactly one `<h1>`, a
+`<title>`, a meta description, a canonical URL, at least one JSON-LD block, the phone number
+and an estimate CTA. The 404 route is additionally asserted to be `noindex` and to declare no
+canonical.
 
-This is the fastest way to catch a broken route — it takes a couple of seconds and needs no
-browser or network.
+It also checks that `src/content/directory.ts` has not drifted from the real content, that
+`dist/index.html` mounts `#root` and loads a hashed bundle, and that `sitemap.xml` covers
+exactly the routes the content implies.
+
+Be clear about what this proves: **every page renders correctly and emits its metadata.** It
+does *not* prove a crawler sees any of it — nothing is in the served HTML until JS runs. The
+harness is a test fixture, not a server.
+
+It takes a couple of seconds and needs no browser or network.
 
 ---
 
 ## Project structure
 
 ```txt
-src/
-  routes/            One file per URL. Loader + head() + component.
-    __root.tsx       Document shell: <html>, header, footer, sticky mobile bar
-    index.tsx        Homepage
-    services.index.tsx / services.$serviceSlug.tsx
-    emergency-electrician.tsx
-    service-areas.index.tsx / service-areas.$locationSlug.tsx
-    projects.index.tsx / projects.$projectSlug.tsx
-    blog.index.tsx / blog.$articleSlug.tsx
-    reviews.tsx  about.tsx  team.tsx  faq.tsx  contact.tsx
-    request-estimate.tsx  sitemap.tsx  privacy.tsx  terms.tsx
+index.html           SPA shell. Invariant head tags only — no title (see below).
 
-  components/        Reusable UI. See the component list below.
+src/
+  main.tsx           Client entry: createRoot + RouterProvider
+  routes.tsx         The route table. Every page is lazy-loaded.
+
+  routes/            One module per page, exporting `loader` and `Component`.
+    home.tsx
+    services-list.tsx / service-detail.tsx
+    emergency-electrician.tsx
+    areas-list.tsx / area-detail.tsx
+    projects-list.tsx / project-detail.tsx
+    blog-list.tsx / article-detail.tsx
+    reviews.tsx  about.tsx  team.tsx  faq.tsx  contact.tsx
+    request-estimate.tsx  sitemap.tsx  credits.tsx  privacy.tsx  terms.tsx
+
+  components/
+    RootLayout.tsx   Chrome every page sits in: header, footer, sticky mobile bar
+    RouteError.tsx   One boundary — 404 page for a thrown 404, error page otherwise
+    Seo.tsx          Per-page document metadata
+    …                Reusable UI. See the component list below.
+
   content/           The "CMS" — typed records + an async access layer
-  lib/               seo, schema, analytics, leads, format helpers
+  lib/
+    router.ts        useRouteData / notFound / requireParam
+    seo.ts schema.ts analytics.ts leads.ts format.ts
   styles/app.css     Design tokens (Tailwind v4 @theme) + base + primitives
-  router.tsx         createRouter()
 
 scripts/
   fetch-photos.mjs       Downloads licensed photography + generates credits
   gen-placeholders.mjs   Generates the SVG placeholders
-  smoke.mjs              SSR smoke test
+  render-entry.tsx       SSR harness for the smoke test (not shipped)
+  smoke.mjs              Route smoke test
 ```
+
+### How a page is wired
+
+A route module exports two things; `src/routes.tsx` picks both up by name via `lazy`.
+
+```tsx
+export const loader = async ({ params }: LoaderFunctionArgs) => {
+  const service = await getService(requireParam(params, 'serviceSlug'))
+  if (!service) throw notFound()          // → RouteError renders the 404 page
+  return { service }
+}
+
+const pageSeo = ({ loaderData }: { loaderData: RouteData }) =>
+  seo({ title: …, description: …, path: …, schema: [serviceSchema(loaderData.service)] })
+
+function ServiceDetailPage() {
+  const data = useRouteData<typeof loader>()   // typed against the loader above
+  return (
+    <>
+      <Seo {...pageSeo({ loaderData: data })} />
+      …
+    </>
+  )
+}
+
+export { ServiceDetailPage as Component }
+```
+
+**Metadata.** `<Seo>` renders a plain `<title>`, `<meta>` and `<link>`; React 19 hoists them
+into `<head>` and removes them again when the route unmounts, so navigation replaces the
+previous page's tags rather than stacking on them. Two rules follow, and breaking either
+produces duplicate tags rather than an error:
+
+1. **Exactly one `<Seo>` per page.** React does not dedupe metadata.
+2. **Invariant tags belong in `index.html`** — charset, viewport, favicon, manifest. Note
+   `index.html` deliberately has **no `<title>`**: React's hoisted title does not dedupe
+   against one already in the document, and a static one would sit first in document order
+   and win, pinning every page to the same title.
 
 ### Routes
 
@@ -81,12 +146,12 @@ scripts/
 | --- | --- |
 | `/` | Homepage — hero + lead form, trust strip, services, emergency, why-us, projects, areas, reviews, safety, financing, FAQ, final CTA |
 | `/services` | Filterable services grid (category × property type) |
-| `/services/$serviceSlug` | 15 service pages: signs → what's included → process → pricing → safety → projects → reviews → related → FAQ |
+| `/services/:serviceSlug` | 15 service pages: signs → what's included → process → pricing → safety → projects → reviews → related → FAQ |
 | `/emergency-electrician` | Conversion-focused 24/7 page with 8 scenarios and what-to-do-now steps |
 | `/service-areas` | 8 cities, ZIP coverage, map |
-| `/service-areas/$locationSlug` | Local SEO page per city with local intro, services, projects, reviews |
-| `/projects` · `/projects/$projectSlug` | Before/after gallery with service + location filters |
-| `/blog` · `/blog/$articleSlug` | 10 long-form guides with search, category filters and a TOC |
+| `/service-areas/:locationSlug` | Local SEO page per city with local intro, services, projects, reviews |
+| `/projects` · `/projects/:projectSlug` | Before/after gallery with service + location filters |
+| `/blog` · `/blog/:articleSlug` | 10 long-form guides with search, category filters and a TOC |
 | `/reviews` | 20 reviews, rating distribution, per-service filter |
 | `/about` · `/team` | Company story, timeline, licensing, safety philosophy, 8 staff |
 | `/faq` | 39 questions across 9 categories with search + category nav |
@@ -147,42 +212,75 @@ block.
 | `types.ts` | All record types plus the card/option projections |
 | `index.ts` | **The access layer.** Async getters that routes call from loaders |
 
-### Two performance decisions worth knowing about
+### Two structural decisions worth knowing about
 
-Both exist because **loader return values are serialised into the SSR HTML** and **loaders
-also run in the browser during client-side navigation**.
-
-1. **Card projections.** `getServiceCards()`, `getProjectCards()`, `getPostCards()` and
-   `getAreaCards()` return only the fields a card renders. Returning full records instead put
-   every service's pricing tables and every article body into the HTML of pages that render a
-   grid — `/services` was 156KB of HTML, and `/sitemap` was 202KB. They are now 99KB and 53KB.
-
-2. **Dynamic imports in `content/index.ts`.** The record modules are loaded with
+1. **Dynamic imports in `content/index.ts`.** The record modules are loaded with
    `await import()` rather than a static import, so they compile to their own chunks that the
-   browser only fetches when a loader actually runs client-side. This moved ~150KB out of the
-   chunk needed for first paint: the eager bundle went from 573KB to 323KB.
+   browser only fetches when a loader actually runs. This is what keeps the entry bundle at
+   ~330KB (104KB gzipped) instead of dragging all 15 services, 10 articles and 39 FAQs into
+   first paint. `services.ts` alone is 60KB; `posts.ts` is 50KB.
 
-`directory.ts` exists for the same reason — the footer and 404 render on every page, so
-importing `services.ts` from them would drag the entire catalogue back into the shell chunk.
-`npm run smoke` asserts it stays in sync with the real content so it cannot silently drift.
+   `directory.ts` exists for the same reason — the footer and 404 render on every page, so
+   importing `services.ts` from them would drag the entire catalogue back into the shell
+   chunk. `npm run smoke` asserts it stays in sync with the real content.
+
+2. **Card projections.** `getServiceCards()`, `getProjectCards()`, `getPostCards()` and
+   `getAreaCards()` return only the fields a card renders.
+
+   Be aware this earns much less than it used to. Under SSR these projections kept whole
+   records out of the serialised HTML payload — `/services` went from 156KB to 99KB, and
+   `/sitemap` from 202KB to 53KB. In a client-rendered app the full records are already in
+   the chunk the loader imported, so projecting them costs a little CPU and saves no
+   transfer. They are kept because they still keep component props honest and narrow, and
+   because they are the natural shape for a Supabase `select` when a backend arrives — the
+   payload win comes back the moment the data is fetched over the wire.
 
 ---
 
 ## SEO
 
-Handled by `src/lib/seo.ts` and `src/lib/schema.ts`, applied per route via `head()`:
+Handled by `src/lib/seo.ts` and `src/lib/schema.ts`, applied per route via `<Seo>`:
 
-- SSR title, meta description, canonical, Open Graph, Twitter card, geo tags
+- Title, meta description, canonical, Open Graph, Twitter card, geo tags
 - Structured data: `Electrician` / `LocalBusiness`, `WebSite`, `Service`, `FAQPage`,
   `Review` + `AggregateRating`, `Article`, `CreativeWork`, `BreadcrumbList`
 - `sitemap.xml` is generated at build time from the same content the pages render, so a new
   service or article cannot silently fall out of it (see `vite.config.ts`)
 - `public/robots.txt`, plus a human-readable `/sitemap` page
 - Location pages for each city served
+- The 404 page is `noindex` and declares no canonical
 
-**Prerendering** is available and commented out in `vite.config.ts`. Every public page is
-identical for all visitors, so enabling it turns the site fully static on top of SSR. It needs
-a machine that permits loopback HTTP — the prerenderer drives a local server to capture pages.
+### What client rendering costs, concretely
+
+All of the above is created by JavaScript at runtime. The HTML actually served for **every**
+URL is the same near-empty shell: a `<div id="root">` and a script tag. That has three
+consequences worth deciding about before launch rather than after.
+
+1. **Non-JS crawlers see nothing.** Googlebot renders JavaScript and will generally index the
+   site, though on a slower second-pass schedule. Most social, chat and messaging link
+   previewers do **not** — Facebook, LinkedIn, WhatsApp, iMessage, Slack and X read the raw
+   HTML. A shared link to any page will show no title, description or image.
+
+2. **Soft 404s.** Static hosting answers every unmatched URL with the shell and HTTP **200**,
+   then the app renders the 404 page. Search engines see a 200 for pages that do not exist.
+   The `noindex` on the 404 page is what mitigates this; it is not as good as a real 404
+   status.
+
+3. **Slower first contentful paint**, because nothing renders until the entry bundle has
+   downloaded, parsed and executed, and the route chunk after it.
+
+### Getting it back, in order of effort
+
+- **Prerender at build time.** Every public page here is identical for all visitors, which
+  makes them perfect static-HTML candidates. A plugin such as `vite-plugin-prerender` or a
+  post-build pass that renders each route (`scripts/render-entry.tsx` already does exactly
+  this — it renders any route to a complete HTML string) and writes `dist/<route>/index.html`
+  restores real HTML for crawlers and previewers, and fixes FCP, while keeping the app a SPA
+  after first load. **This is the recommended fix** and it is a contained change: the harness
+  and the route list both already exist.
+- **Configure real 404s** for unmatched paths at the CDN, once prerendering means known
+  routes have their own files.
+- **Go back to SSR** if the content ever stops being identical for every visitor.
 
 ---
 
@@ -203,13 +301,49 @@ a machine that permits loopback HTTP — the prerenderer drives a local server t
 
 ## Performance
 
-- SSR-first; loaders fetch server-side so nothing SEO-critical waits for hydration
-- Route-level code splitting (39 chunks); content chunks load on demand
-- ~30 hand-written SVG icons instead of an icon package
+- Route-level code splitting (43 chunks) — every page and every content module is lazy;
+  the entry bundle is 330KB raw / 104KB gzipped and each page chunk is 1–20KB
+- ~40 hand-written SVG icons instead of an icon package
 - System font stack — zero font requests
 - `Photo` reserves space from intrinsic dimensions; only the hero image is eager/high-priority
 - The Google Maps iframe is lazy-loaded
 - Animations are CSS-only
+
+Largest Contentful Paint is now gated on the entry bundle, since nothing renders before it.
+Prerendering (see [SEO](#seo)) is the lever that moves it.
+
+---
+
+## Deployment
+
+`npm run build` produces a static `dist/`. Upload it to any static host or CDN — S3 +
+CloudFront, Netlify, Vercel, Cloudflare Pages, Nginx. No Node process runs in production.
+
+**The one thing you must configure: SPA fallback.** Deep links like
+`/services/ev-charger-installation` are not files on disk. The host must serve `index.html`
+for any path that does not match a real file, or every link into the site except the homepage
+returns a 404.
+
+```nginx
+# Nginx
+location / {
+  try_files $uri $uri/ /index.html;
+}
+```
+
+```txt
+# Netlify — public/_redirects
+/*  /index.html  200
+```
+
+Cloudflare Pages and Vercel do this by default. For S3 + CloudFront, set the error document
+to `index.html` and map 403/404 to `/index.html` with response code 200.
+
+Serve `/assets/*` with a long `Cache-Control` (the filenames are content-hashed) and
+`index.html` with `no-cache`, so a deploy is picked up immediately.
+
+Set `business.seo.siteUrl` in `src/content/business.ts` to the real domain before building —
+it is baked into every canonical URL, Open Graph tag and `sitemap.xml` entry at build time.
 
 ---
 

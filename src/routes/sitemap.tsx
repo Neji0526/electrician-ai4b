@@ -1,4 +1,6 @@
-import { Link, createFileRoute } from '@tanstack/react-router'
+import { Link } from 'react-router'
+import { useRouteData } from '~/lib/router'
+import { Seo } from '~/components/Seo'
 
 import { Icon } from '~/components/Icon'
 import { PageHero } from '~/components/PageHero'
@@ -16,23 +18,23 @@ const TRAIL = [
   { label: 'Sitemap', href: '/sitemap' },
 ]
 
-export const Route = createFileRoute('/sitemap')({
-  loader: async () => getSitemapIndex(),
-  head: () =>
-    seo({
-      title: 'Sitemap',
-      description: `Every page on the ${business.name} website — services, service areas, projects, guides and company information.`,
-      path: '/sitemap',
-      schema: breadcrumbSchema(TRAIL),
-    }),
-  component: SitemapPage,
-})
+export const loader = async () => getSitemapIndex()
+
+const pageSeo = () =>
+  seo({
+    title: 'Sitemap',
+    description: `Every page on the ${business.name} website — services, service areas, projects, guides and company information.`,
+    path: '/sitemap',
+    schema: breadcrumbSchema(TRAIL),
+  })
 
 function SitemapPage() {
-  const { services, areas, projects, posts } = Route.useLoaderData()
+  const { services, areas, projects, posts } = useRouteData<typeof loader>()
 
   return (
     <>
+      <Seo {...pageSeo()} />
+
       <PageHero
         trail={TRAIL}
         title="Sitemap"
@@ -115,8 +117,7 @@ function SitemapPage() {
             {services.map((service) => (
               <li key={service.slug}>
                 <Link
-                  to="/services/$serviceSlug"
-                  params={{ serviceSlug: service.slug }}
+                  to={`/services/${service.slug}`}
                   className={linkClass}
                 >
                   {service.name}
@@ -129,8 +130,7 @@ function SitemapPage() {
             {areas.map((area) => (
               <li key={area.slug}>
                 <Link
-                  to="/service-areas/$locationSlug"
-                  params={{ locationSlug: area.slug }}
+                  to={`/service-areas/${area.slug}`}
                   className={linkClass}
                 >
                   Electrician in {area.city}, {area.state}
@@ -143,8 +143,7 @@ function SitemapPage() {
             {projects.map((project) => (
               <li key={project.slug}>
                 <Link
-                  to="/projects/$projectSlug"
-                  params={{ projectSlug: project.slug }}
+                  to={`/projects/${project.slug}`}
                   className={linkClass}
                 >
                   {project.title}
@@ -157,8 +156,7 @@ function SitemapPage() {
             {posts.map((post) => (
               <li key={post.slug}>
                 <Link
-                  to="/blog/$articleSlug"
-                  params={{ articleSlug: post.slug }}
+                  to={`/blog/${post.slug}`}
                   className={linkClass}
                 >
                   {post.title}
@@ -186,3 +184,5 @@ function Group({ title, children }: { title: string; children: React.ReactNode }
     </nav>
   )
 }
+
+export { SitemapPage as Component }

@@ -1,4 +1,4 @@
-import { Link } from '@tanstack/react-router'
+import { Link } from 'react-router'
 import { Icon } from './Icon'
 import { Badge } from './ui'
 import { audienceLabel, cx, priceLabel } from '~/lib/format'
@@ -15,8 +15,7 @@ export function ServiceCard({ service }: { service: ServiceCardData }) {
   return (
     <li className="h-full">
       <Link
-        to="/services/$serviceSlug"
-        params={{ serviceSlug: service.slug }}
+        to={`/services/${service.slug}`}
         className={cx(
           'group flex h-full flex-col rounded-card border border-line bg-white p-5',
           'shadow-card transition-all duration-200',
@@ -93,8 +92,7 @@ export function ServiceLinkCard({ service }: { service: ServiceCardData }) {
   return (
     <li>
       <Link
-        to="/services/$serviceSlug"
-        params={{ serviceSlug: service.slug }}
+        to={`/services/${service.slug}`}
         className="group flex items-center gap-3 rounded-card border border-line bg-white p-4 shadow-card transition-colors hover:border-brand-200 hover:bg-brand-50/40"
       >
         <span className="grid h-10 w-10 shrink-0 place-items-center rounded-lg bg-brand-50 text-brand-600">

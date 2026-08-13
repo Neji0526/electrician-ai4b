@@ -3,9 +3,9 @@ import { cx } from '~/lib/format'
 
 /* ============================================================================
    Buttons
-   `btn()` returns the class string so it can be applied to TanStack `<Link>`,
-   a plain `<a href="tel:…">`, or a real `<button>` without wrapper components
-   fighting the router's typed links.
+   `btn()` returns the class string so it can be applied to a router `<Link>`,
+   a plain `<a href="tel:…">`, or a real `<button>` — three different elements
+   that need to look identical, without a wrapper component per case.
    ========================================================================== */
 
 export type ButtonVariant = 'cta' | 'primary' | 'secondary' | 'emergency' | 'ghost' | 'white' | 'outline-light'

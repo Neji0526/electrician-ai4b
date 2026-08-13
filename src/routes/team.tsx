@@ -1,4 +1,5 @@
-import { createFileRoute } from '@tanstack/react-router'
+import { useRouteData } from '~/lib/router'
+import { Seo } from '~/components/Seo'
 
 import { Icon } from '~/components/Icon'
 import { PageHero } from '~/components/PageHero'
@@ -17,25 +18,25 @@ const TRAIL = [
   { label: 'Our Team', href: '/team' },
 ]
 
-export const Route = createFileRoute('/team')({
-  loader: async () => ({ team: await getTeam() }),
-  head: () =>
-    seo({
-      title: `Meet Our Electricians — ${business.name}`,
-      description: `The licensed electricians, project managers and office staff at ${business.name} in Austin, TX. Licences, certifications and specialties for every member of the team.`,
-      path: '/team',
-      schema: breadcrumbSchema(TRAIL),
-    }),
-  component: TeamPage,
-})
+export const loader = async () => ({ team: await getTeam() })
+
+const pageSeo = () =>
+  seo({
+    title: `Meet Our Electricians — ${business.name}`,
+    description: `The licensed electricians, project managers and office staff at ${business.name} in Austin, TX. Licences, certifications and specialties for every member of the team.`,
+    path: '/team',
+    schema: breadcrumbSchema(TRAIL),
+  })
 
 function TeamPage() {
-  const { team } = Route.useLoaderData()
+  const { team } = useRouteData<typeof loader>()
   const licensed = team.filter((m) => m.licenseInfo)
   const totalYears = team.reduce((sum, m) => sum + m.yearsExperience, 0)
 
   return (
     <>
+      <Seo {...pageSeo()} />
+
       <PageHero
         trail={TRAIL}
         eyebrow="Our team"
@@ -113,3 +114,5 @@ function TeamPage() {
     </>
   )
 }
+
+export { TeamPage as Component }

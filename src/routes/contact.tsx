@@ -1,4 +1,5 @@
-import { createFileRoute } from '@tanstack/react-router'
+import { useRouteData } from '~/lib/router'
+import { Seo } from '~/components/Seo'
 
 import { Icon } from '~/components/Icon'
 import { PageHero } from '~/components/PageHero'
@@ -22,29 +23,29 @@ const TRAIL = [
   { label: 'Contact', href: '/contact' },
 ]
 
-export const Route = createFileRoute('/contact')({
-  loader: async () => {
-    const [services, faqs] = await Promise.all([
-      getServiceOptions(),
-      getFaqs({ category: 'Appointments & Scheduling', limit: 4 }),
-    ])
-    return { services, faqs }
-  },
-  head: () =>
-    seo({
-      title: `Contact ${business.name} — Austin, TX Electricians`,
-      description: `Call ${business.phone}, email ${business.email}, or request a free estimate online. Licensed Austin electricians open Mon–Fri 7am–6pm with a 24/7 emergency line.`,
-      path: '/contact',
-      schema: [breadcrumbSchema(TRAIL), localBusinessSchema()],
-    }),
-  component: ContactPage,
-})
+export const loader = async () => {
+  const [services, faqs] = await Promise.all([
+    getServiceOptions(),
+    getFaqs({ category: 'Appointments & Scheduling', limit: 4 }),
+  ])
+  return { services, faqs }
+}
+
+const pageSeo = () =>
+  seo({
+    title: `Contact ${business.name} — Austin, TX Electricians`,
+    description: `Call ${business.phone}, email ${business.email}, or request a free estimate online. Licensed Austin electricians open Mon–Fri 7am–6pm with a 24/7 emergency line.`,
+    path: '/contact',
+    schema: [breadcrumbSchema(TRAIL), localBusinessSchema()],
+  })
 
 function ContactPage() {
-  const { services, faqs } = Route.useLoaderData()
+  const { services, faqs } = useRouteData<typeof loader>()
 
   return (
     <>
+      <Seo {...pageSeo()} />
+
       <PageHero
         trail={TRAIL}
         eyebrow="Contact us"
@@ -221,3 +222,5 @@ function ContactPage() {
     </>
   )
 }
+
+export { ContactPage as Component }

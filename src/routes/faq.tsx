@@ -1,5 +1,7 @@
 import { useMemo, useState } from 'react'
-import { Link, createFileRoute } from '@tanstack/react-router'
+import { Link } from 'react-router'
+import { useRouteData } from '~/lib/router'
+import { Seo } from '~/components/Seo'
 
 import { Icon } from '~/components/Icon'
 import { PageHero } from '~/components/PageHero'
@@ -30,27 +32,28 @@ const CATEGORY_ICONS: Record<string, string> = {
   'Warranty & Guarantees': 'badge',
 }
 
-export const Route = createFileRoute('/faq')({
-  loader: async () => {
-    const [groups, all] = await Promise.all([getFaqsGrouped(), getFaqs()])
-    return { groups, all }
-  },
-  head: ({ loaderData }) =>
-    seo({
-      title: 'Frequently Asked Questions — Austin Electricians',
-      description:
-        'Answers on scheduling, pricing, emergency service, electrical safety, panels, permits, commercial work and our workmanship warranty.',
-      path: '/faq',
-      schema: [
-        breadcrumbSchema(TRAIL),
-        ...(loaderData?.all ? [faqSchema(loaderData.all)] : []),
-      ],
-    }),
-  component: FaqPage,
-})
+export const loader = async () => {
+  const [groups, all] = await Promise.all([getFaqsGrouped(), getFaqs()])
+  return { groups, all }
+}
+
+type RouteData = Awaited<ReturnType<typeof loader>>
+
+const pageSeo = ({ loaderData }: { loaderData: RouteData }) =>
+  seo({
+    title: 'Frequently Asked Questions — Austin Electricians',
+    description:
+      'Answers on scheduling, pricing, emergency service, electrical safety, panels, permits, commercial work and our workmanship warranty.',
+    path: '/faq',
+    schema: [
+      breadcrumbSchema(TRAIL),
+      ...(loaderData?.all ? [faqSchema(loaderData.all)] : []),
+    ],
+  })
 
 function FaqPage() {
-  const { groups, all } = Route.useLoaderData()
+  const data = useRouteData<typeof loader>()
+  const { groups, all } = data
   const [query, setQuery] = useState('')
   const [active, setActive] = useState<string | null>(null)
 
@@ -69,6 +72,8 @@ function FaqPage() {
 
   return (
     <>
+      <Seo {...pageSeo({ loaderData: data })} />
+
       <PageHero
         trail={TRAIL}
         eyebrow="Questions & answers"
@@ -225,3 +230,5 @@ function navItem(active: boolean) {
 function slug(text: string) {
   return text.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')
 }
+
+export { FaqPage as Component }

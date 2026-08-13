@@ -1,4 +1,6 @@
-import { Link, createFileRoute } from '@tanstack/react-router'
+import { Link } from 'react-router'
+import { useRouteData } from '~/lib/router'
+import { Seo } from '~/components/Seo'
 
 import { Icon } from '~/components/Icon'
 import { PageHero } from '~/components/PageHero'
@@ -52,23 +54,23 @@ const TIMELINE = [
   },
 ] as const
 
-export const Route = createFileRoute('/about')({
-  loader: async () => ({ team: await getTeam() }),
-  head: () =>
-    seo({
-      title: `About ${business.name} — Licensed Austin Electricians Since ${business.founded}`,
-      description: `Family-owned electrical contractor in Austin, TX. ${business.license.label}, ${business.yearsInBusiness} years in business, W-2 electricians, and a workmanship warranty that transfers with the house.`,
-      path: '/about',
-      schema: [breadcrumbSchema(TRAIL), localBusinessSchema()],
-    }),
-  component: AboutPage,
-})
+export const loader = async () => ({ team: await getTeam() })
+
+const pageSeo = () =>
+  seo({
+    title: `About ${business.name} — Licensed Austin Electricians Since ${business.founded}`,
+    description: `Family-owned electrical contractor in Austin, TX. ${business.license.label}, ${business.yearsInBusiness} years in business, W-2 electricians, and a workmanship warranty that transfers with the house.`,
+    path: '/about',
+    schema: [breadcrumbSchema(TRAIL), localBusinessSchema()],
+  })
 
 function AboutPage() {
-  const { team } = Route.useLoaderData()
+  const { team } = useRouteData<typeof loader>()
 
   return (
     <>
+      <Seo {...pageSeo()} />
+
       <PageHero
         trail={TRAIL}
         eyebrow="About us"
@@ -278,3 +280,5 @@ function AboutPage() {
     </>
   )
 }
+
+export { AboutPage as Component }

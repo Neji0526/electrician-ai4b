@@ -1,4 +1,5 @@
-import { createFileRoute } from '@tanstack/react-router'
+import { useRouteData } from '~/lib/router'
+import { Seo } from '~/components/Seo'
 
 import { PageHero } from '~/components/PageHero'
 import { Section } from '~/components/ui'
@@ -22,23 +23,23 @@ interface Credit {
   describes: string
 }
 
-export const Route = createFileRoute('/credits')({
-  loader: async () => ({ credits: credits as Credit[] }),
-  head: () =>
-    seo({
-      title: 'Photo Credits & Licences',
-      description: `Attribution for the photography used on the ${business.name} website, with the author, licence and source for every image.`,
-      path: '/credits',
-      schema: breadcrumbSchema(TRAIL),
-    }),
-  component: CreditsPage,
-})
+export const loader = async () => ({ credits: credits as Credit[] })
+
+const pageSeo = () =>
+  seo({
+    title: 'Photo Credits & Licences',
+    description: `Attribution for the photography used on the ${business.name} website, with the author, licence and source for every image.`,
+    path: '/credits',
+    schema: breadcrumbSchema(TRAIL),
+  })
 
 function CreditsPage() {
-  const { credits: list } = Route.useLoaderData()
+  const { credits: list } = useRouteData<typeof loader>()
 
   return (
     <>
+      <Seo {...pageSeo()} />
+
       <PageHero
         trail={TRAIL}
         title="Photo credits"
@@ -118,3 +119,5 @@ function CreditsPage() {
     </>
   )
 }
+
+export { CreditsPage as Component }

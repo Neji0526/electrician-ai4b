@@ -1,6 +1,5 @@
 import { useEffect, useRef } from 'react'
-import { Link } from '@tanstack/react-router'
-import { AppLink } from './AppLink'
+import { Link, NavLink } from 'react-router'
 import { Icon } from './Icon'
 import { Logo } from './Logo'
 import { btn } from './ui'
@@ -65,14 +64,14 @@ export function MobileNav({ open, onClose }: { open: boolean; onClose: () => voi
           <ul className="divide-y divide-line">
             {primaryNav.map((item) => (
               <li key={item.href}>
-                <AppLink
+                <NavLink
                   to={item.href}
                   onClick={onClose}
-                  className="flex items-center justify-between py-3.5 text-lg font-semibold text-ink data-[status=active]:text-brand-700"
+                  className="flex items-center justify-between py-3.5 text-lg font-semibold text-ink aria-[current=page]:text-brand-700"
                 >
                   {item.label}
                   <Icon name="chevron-right" size={18} className="text-line-strong" />
-                </AppLink>
+                </NavLink>
               </li>
             ))}
           </ul>

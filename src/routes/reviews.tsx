@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react'
-import { createFileRoute } from '@tanstack/react-router'
+import { useRouteData } from '~/lib/router'
+import { Seo } from '~/components/Seo'
 
 import { Icon } from '~/components/Icon'
 import { PageHero } from '~/components/PageHero'
@@ -19,31 +20,32 @@ const TRAIL = [
   { label: 'Reviews', href: '/reviews' },
 ]
 
-export const Route = createFileRoute('/reviews')({
-  loader: async () => {
-    const [reviews, stats, services] = await Promise.all([
-      getReviews(),
-      getReviewStats(),
-      getServiceCards(),
-    ])
-    const serviceNames = Object.fromEntries(services.map((s) => [s.slug, s.shortName]))
-    return { reviews, stats, serviceNames, services }
-  },
-  head: ({ loaderData }) =>
-    seo({
-      title: `Customer Reviews — ${business.rating}★ from ${business.reviewCount} Austin Customers`,
-      description: `Read verified reviews of ${business.name} from homeowners and businesses across Austin, Round Rock, Cedar Park and the surrounding Hill Country.`,
-      path: '/reviews',
-      schema: [
-        breadcrumbSchema(TRAIL),
-        ...(loaderData?.reviews ? [reviewSchema(loaderData.reviews.slice(0, 10))] : []),
-      ],
-    }),
-  component: ReviewsPage,
-})
+export const loader = async () => {
+  const [reviews, stats, services] = await Promise.all([
+    getReviews(),
+    getReviewStats(),
+    getServiceCards(),
+  ])
+  const serviceNames = Object.fromEntries(services.map((s) => [s.slug, s.shortName]))
+  return { reviews, stats, serviceNames, services }
+}
+
+type RouteData = Awaited<ReturnType<typeof loader>>
+
+const pageSeo = ({ loaderData }: { loaderData: RouteData }) =>
+  seo({
+    title: `Customer Reviews — ${business.rating}★ from ${business.reviewCount} Austin Customers`,
+    description: `Read verified reviews of ${business.name} from homeowners and businesses across Austin, Round Rock, Cedar Park and the surrounding Hill Country.`,
+    path: '/reviews',
+    schema: [
+      breadcrumbSchema(TRAIL),
+      ...(loaderData?.reviews ? [reviewSchema(loaderData.reviews.slice(0, 10))] : []),
+    ],
+  })
 
 function ReviewsPage() {
-  const { reviews, stats, serviceNames, services } = Route.useLoaderData()
+  const data = useRouteData<typeof loader>()
+  const { reviews, stats, serviceNames, services } = data
   const [filter, setFilter] = useState('all')
 
   const usedServices = useMemo(
@@ -60,6 +62,8 @@ function ReviewsPage() {
 
   return (
     <>
+      <Seo {...pageSeo({ loaderData: data })} />
+
       <PageHero
         trail={TRAIL}
         eyebrow="Customer reviews"
@@ -168,3 +172,5 @@ function ReviewsPage() {
     </>
   )
 }
+
+export { ReviewsPage as Component }
